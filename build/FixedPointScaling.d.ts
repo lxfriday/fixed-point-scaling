@@ -17,6 +17,10 @@ interface IOptions {
      */
     scaleStep?: number;
     /**
+     * 是否允许缩放
+     */
+    enableScale?: boolean;
+    /**
      * 滚轮滚动让 target 移动时,移动的 step (px)
      */
     translateStep?: number;
@@ -49,6 +53,17 @@ interface IOptions {
      * 拖拽时的鼠标样式，默认 `grab`
      */
     draggingCursorType?: string;
+    /**
+     * 初始化时的 translate 值
+     */
+    defaultTranslate?: {
+        x: number;
+        y: number;
+    };
+    /**
+     * 初始化时的 scale 值
+     */
+    defaultScale?: number;
     /**
      * 当transform状态发生变化时的监听函数
      */
@@ -88,6 +103,10 @@ export default class FixedPointScaling {
      * 缩放step，默认为 0.1
      */
     private scaleStep;
+    /**
+     * 是否允许缩放
+     */
+    private enableScale;
     /**
      * 滚轮滚动让 target 移动时,移动的 step (px)，默认 10
      */

@@ -66,6 +66,10 @@ var FixedPointScaling = /** @class */ (function () {
          */
         this.scaleStep = 0.1;
         /**
+         * 是否允许缩放
+         */
+        this.enableScale = false;
+        /**
          * 滚轮滚动让 target 移动时,移动的 step (px)，默认 10
          */
         this.translateStep = 10;
@@ -109,6 +113,7 @@ var FixedPointScaling = /** @class */ (function () {
         this.translate = { x: 0, y: 0 };
         this.target = options.target;
         this.bindWheelEventOnTarget = this.mapBooleanOptions(options.bindWheelEventOnTarget, true);
+        this.enableScale = this.mapBooleanOptions(options.enableScale, false);
         // this.enableWindowScale = this.mapBooleanOptions(
         //   options.enableWindowScale,
         //   false,
@@ -122,6 +127,12 @@ var FixedPointScaling = /** @class */ (function () {
         this.onTransformChange = options.onTransformChange;
         this.enableKeyboardScale = this.mapBooleanOptions(options.enableKeyboardScale, false);
         this.enableWheelSlide = this.mapBooleanOptions(options.enableWheelSlide, false);
+        this.scale =
+            typeof options.defaultScale === 'number' ? options.defaultScale : 1;
+        this.translate =
+            typeof options.defaultTranslate === 'object'
+                ? options.defaultTranslate
+                : { x: 0, y: 0 };
         if (options.draggingCursorType)
             this.draggingCursorType = options.draggingCursorType;
         if (options.transition === false || options.transition === void 0)
@@ -134,6 +145,7 @@ var FixedPointScaling = /** @class */ (function () {
                 this.transition = 'transform 0.1s';
             }
         }
+        console.log(this, options.defaultScale);
         this.init();
         this.run();
     }
@@ -154,6 +166,7 @@ var FixedPointScaling = /** @class */ (function () {
         var target = this.target;
         target.style.transformOrigin = '0 0'; // origin 设置为左上角
         target.style.transition = this.transition;
+        this.applyTransform();
     };
     /**
      * 开始运行
@@ -183,7 +196,7 @@ var FixedPointScaling = /** @class */ (function () {
         // window 发生滚动事件
         this.handleWindowWheel = function (e) {
             // e.preventDefault()
-            if (!e.ctrlKey && _this.enableWheelSlide) {
+            if (!e.ctrlKey) {
                 // 允许滚轮
                 var horizontalFlag = 0, verticalFlag = 0;
                 if (e.deltaX < 0)
@@ -199,6 +212,7 @@ var FixedPointScaling = /** @class */ (function () {
         };
         // target 发生鼠标按下事件
         this.handleMouseDown = function (e) {
+            e.stopPropagation();
             var target = _this.target;
             _this.normalCursorType = target.style.cursor;
             target.style.cursor = _this.draggingCursorType;
@@ -211,6 +225,7 @@ var FixedPointScaling = /** @class */ (function () {
         };
         // target 发生鼠标移动事件
         this.handleMouseMove = function (e) {
+            e.stopPropagation();
             if (_this.isDragging) {
                 var cursorCurrentPos = {
                     x: e.clientX,
@@ -235,8 +250,9 @@ var FixedPointScaling = /** @class */ (function () {
         };
         // target 发生鼠标滚动事件
         this.handleWheel = function (e) {
-            if (e.ctrlKey) {
+            if (_this.enableScale && e.ctrlKey) {
                 e.preventDefault();
+                e.stopPropagation();
                 if (_this.bindWheelEventOnTarget && !_this.checkCursorInTarget(e)) {
                     log('鼠标不在 target 区域内');
                     if (e.deltaY < 0)
@@ -343,7 +359,6 @@ var FixedPointScaling = /** @class */ (function () {
             _this.applyTransform();
         };
         this.handleTranslate = function (nextX, nextY) {
-            console.log('handleTranslate', nextX, nextY);
             _this.translate = {
                 x: nextX,
                 y: nextY,
@@ -352,7 +367,7 @@ var FixedPointScaling = /** @class */ (function () {
         };
         this.handleKeyDown = function (e) {
             log('handleKeyDown pressed: ', e.code);
-            if (e.ctrlKey) {
+            if (_this.enableScale && e.ctrlKey) {
                 if (e.code === 'NumpadAdd' || e.code === 'Equal') {
                     e.preventDefault();
                     _this.handleScaleUp();
@@ -375,19 +390,23 @@ var FixedPointScaling = /** @class */ (function () {
             window.addEventListener('keydown', this.handleKeyDown);
         }
         if (this.bindWheelEventOnTarget) {
-            target.addEventListener('wheel', this.handleWheel, {
-                passive: false,
-            });
+            if (this.enableScale)
+                target.addEventListener('wheel', this.handleWheel, {
+                    passive: false,
+                });
         }
         else {
-            window.addEventListener('wheel', this.handleWheel, {
+            if (this.enableScale)
+                window.addEventListener('wheel', this.handleWheel, {
+                    passive: false,
+                });
+        }
+        // 是否禁止全局缩放
+        if (this.enableWheelSlide) {
+            window.addEventListener('wheel', this.handleWindowWheel, {
                 passive: false,
             });
         }
-        // 是否禁止全局缩放
-        window.addEventListener('wheel', this.handleWindowWheel, {
-            passive: false,
-        });
     };
     /**
      * 移除事件监听器
@@ -397,15 +416,19 @@ var FixedPointScaling = /** @class */ (function () {
         target.removeEventListener('mousedown', this.handleMouseDown);
         target.removeEventListener('mousemove', this.handleMouseMove);
         window.removeEventListener('mouseup', this.handleWindowMouseUp);
-        window.removeEventListener('wheel', this.handleWindowWheel);
+        if (this.enableWheelSlide) {
+            window.removeEventListener('wheel', this.handleWindowWheel);
+        }
         if (this.enableKeyboardScale) {
             window.removeEventListener('keydown', this.handleKeyDown);
         }
         if (this.bindWheelEventOnTarget) {
-            target.removeEventListener('wheel', this.handleWheel);
+            if (this.enableScale)
+                target.removeEventListener('wheel', this.handleWheel);
         }
         else {
-            window.removeEventListener('wheel', this.handleWheel);
+            if (this.enableScale)
+                window.removeEventListener('wheel', this.handleWheel);
         }
         log('listeners removed');
     };
