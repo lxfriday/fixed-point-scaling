@@ -55,6 +55,14 @@ interface IOptions {
    */
   draggingCursorType?: string
   /**
+   * 初始化时的 translate 值
+   */
+  defaultTranslate?: { x: number; y: number }
+  /**
+   * 初始化时的 scale 值
+   */
+  defaultScale?: number
+  /**
    * 当transform状态发生变化时的监听函数
    */
   onTransformChange?(
@@ -230,6 +238,14 @@ export default class FixedPointScaling {
       options.enableWheelSlide,
       false,
     )
+
+    this.scale =
+      typeof options.defaultScale === 'number' ? options.defaultScale : 1
+    this.translate =
+      typeof options.defaultTranslate === 'object'
+        ? options.defaultTranslate
+        : { x: 0, y: 0 }
+
     if (options.draggingCursorType)
       this.draggingCursorType = options.draggingCursorType
     if (options.transition === false || options.transition === void 0)
@@ -241,6 +257,7 @@ export default class FixedPointScaling {
         this.transition = 'transform 0.1s'
       }
     }
+    console.log(this, options.defaultScale)
     this.init()
     this.run()
   }
@@ -254,6 +271,7 @@ export default class FixedPointScaling {
     const target = this.target
     target.style.transformOrigin = '0 0' // origin 设置为左上角
     target.style.transition = this.transition as string
+    this.applyTransform()
   }
   /**
    * 开始运行
@@ -301,6 +319,7 @@ export default class FixedPointScaling {
     }
     // target 发生鼠标按下事件
     this.handleMouseDown = (e: MouseEvent) => {
+      e.stopPropagation()
       const target = this.target
       this.normalCursorType = target!.style.cursor
       target!.style.cursor = this.draggingCursorType
@@ -313,6 +332,7 @@ export default class FixedPointScaling {
     }
     // target 发生鼠标移动事件
     this.handleMouseMove = (e: MouseEvent) => {
+      e.stopPropagation()
       if (this.isDragging) {
         const cursorCurrentPos = {
           x: e.clientX,
@@ -341,6 +361,7 @@ export default class FixedPointScaling {
     this.handleWheel = (e: WheelEvent) => {
       if (this.enableScale && e.ctrlKey) {
         e.preventDefault()
+        e.stopPropagation()
         if (this.bindWheelEventOnTarget && !this.checkCursorInTarget(e)) {
           log('鼠标不在 target 区域内')
           if (e.deltaY < 0) this.handleScaleUp!()

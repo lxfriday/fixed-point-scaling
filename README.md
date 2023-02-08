@@ -19,7 +19,6 @@
 
 最初级的配置，给 `FixedPointScaling` 构造函数传递 `target` 属性，即可初始化，`target` 表示你将要操作的目标元素。
 
-
 初始化之后的默认元素支持鼠标拖拽效果，如果要支持缩放，需要添加额外的配置参数。
 
 如果需要支持 **ctrl+滚轮** 实现缩放：
@@ -103,5 +102,46 @@ interface IOptions {
      * 当transform状态发生变化时的监听函数
      */
     onTransformChange?(scale: number, translateX: number, translateY: number): void;
+}
+```
+
+## 实例方法
+
+```ts
+export default class FixedPointScaling {
+  /**
+   * 普通放大，使用键盘或者滚轮不在target区域内部
+   * - `base.x` 基点相对于浏览器窗口左侧的距离 left
+   * - `base.y` 基点相对于浏览器窗口顶部的距离 top
+   * - `nextScale` 接下来要放大的倍数
+   */
+  handleScaleUp?: (base?: {
+      x: number;
+      y: number;
+  }) => void;
+  /**
+   * 普通缩小，使用键盘或者滚轮不在target区域内部
+   * - `base.x` 基点相对于浏览器窗口左侧的距离 left
+   * - `base.y` 基点相对于浏览器窗口顶部的距离 top
+   * - `nextScale` 接下来要放大的倍数
+   */
+  handleScaleDown?: (base?: {
+      x: number;
+      y: number;
+  }) => void;
+  /**
+   * 移动target
+   * - `nextX` 接下来的 translateX
+   * - `nextY` 接下来的 translateY
+   */
+  handleTranslate?: (nextX: number, nextY: number) => void;
+  /**
+   * 移除事件监听器
+   */
+  removeListeners(): void;
+  /**
+   * 重置 transform transform-origin
+   */
+  resetTransform(): void;
 }
 ```

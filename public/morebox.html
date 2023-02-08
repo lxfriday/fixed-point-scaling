@@ -11,11 +11,11 @@
         overflow: hidden;
       }
       .wrapper {
-        left: calc(50% - 250px);
-        top: 100px;
+        left: calc(50% - 900px);
+        top: 50px;
         position: absolute;
-        width: 500px;
-        height: 500px;
+        width: 1800px;
+        height: 1000px;
         background-color: #ccc;
       }
       .lineVer,
@@ -36,10 +36,18 @@
         left: 0;
         background-color: red;
       }
-      .box {
+      .box, img {
+        position: absolute;
+        left: 0;
+        top: 0;
         width: 200px;
         height: 200px;
         background-color: bisque;
+        border: 1px solid #333;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
       }
       .dot,
       .boxDot {
@@ -83,15 +91,36 @@
     <script>
       const scaleEle = document.querySelector('#scale'),
         translateEle = document.querySelector('#translate')
-      const boxScaler = new FixedPointScaling({
-        target: document.querySelector('.box'),
-        onTransformChange(scale, x, y) {
-          scaleEle.innerText = `缩放倍数 ${Math.floor(scale * 100)}`
-          translateEle.innerText = `缩放倍数 ${JSON.stringify({ x, y })}`
-        },
+      const fragment = document.createDocumentFragment()
+      new Array(10).fill(0).map((_, i) => {
+        const box = document.createElement('div')
+        box.classList.add('box')
+        box.innerText = i
+        new FixedPointScaling({
+          target: box,
+          enableScale: true,
+          defaultTranslate: {x: i*10, y: i*10},
+        })
+        fragment.append(box)
       })
+      new Array(10).fill(0).map((_, i) => {
+        const img = document.createElement('img')
+        img.src = 'http://qiniu1.lxfriday.xyz/SAO/005GOaLIgy1fyc35ofomnj3073073q2u_1650024899487_66218e6a-8df8-4cd9-9062-0c0d40895f64.jpg'
+        img.draggable = false
+        new FixedPointScaling({
+          target: img,
+          enableScale: true,
+          defaultTranslate: {x: 500 + i*10, y: 500 + i*10},
+        })
+        fragment.append(img)
+      })
+
+      document.querySelector('.wrapper').append(fragment)
+
       const wrapperScaler = new FixedPointScaling({
         target: document.querySelector('.wrapper'),
+        enableScale: true,
+        
         onTransformChange(scale, x, y) {
           scaleEle.innerText = `缩放倍数 ${Math.floor(scale * 100)}`
           translateEle.innerText = `缩放倍数 ${JSON.stringify({ x, y })}`

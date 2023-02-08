@@ -54,6 +54,17 @@ interface IOptions {
      */
     draggingCursorType?: string;
     /**
+     * 初始化时的 translate 值
+     */
+    defaultTranslate?: {
+        x: number;
+        y: number;
+    };
+    /**
+     * 初始化时的 scale 值
+     */
+    defaultScale?: number;
+    /**
      * 当transform状态发生变化时的监听函数
      */
     onTransformChange?(scale: number, translateX: number, translateY: number): void;
