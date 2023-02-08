@@ -148,7 +148,8 @@ export default class FixedPointScaling {
 
 ## Demo
 
-- [onebox](https://qiniu1.lxfriday.xyz/feoffer/1675846507238_4ac80db3-f797-4e5e-8de3-1450f9e58329.html)
-- [twobox](https://qiniu1.lxfriday.xyz/feoffer/1675846524418_f1c9e447-528c-478c-92f7-9182c820f072.html)
-- [100个子 box morebox](https://qiniu1.lxfriday.xyz/feoffer/1675849661364_4909a805-1583-4fcf-bcf6-2df00832f886.html) 
-- [1000个box 卡顿](https://qiniu1.lxfriday.xyz/feoffer/1675850084632_bba6085a-1129-4a23-95e9-ee70577be04e.html)
+- [1box](https://qiniu1.lxfriday.xyz/feoffer/1675846507238_4ac80db3-f797-4e5e-8de3-1450f9e58329.html)
+- [2box](https://qiniu1.lxfriday.xyz/feoffer/1675846524418_f1c9e447-528c-478c-92f7-9182c820f072.html)
+- [100个](https://qiniu1.lxfriday.xyz/feoffer/1675850287091_dd438964-b5f0-4ab5-ae1a-08bdd99d20a6.html) 
+- [500个box](https://qiniu1.lxfriday.xyz/feoffer/1675850287091_dbba1a17-de67-463d-828e-48992edd0dcc.html)
+- [2000个box 卡顿](https://qiniu1.lxfriday.xyz/feoffer/1675850287091_931f057a-d3b6-4d4f-8f6e-08951c50dade.html)
