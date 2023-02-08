@@ -444,7 +444,6 @@ export default class FixedPointScaling {
       this.applyTransform()
     }
     this.handleTranslate = (nextX: number, nextY: number) => {
-      console.log('handleTranslate', nextX, nextY)
       this.translate = {
         x: nextX,
         y: nextY,

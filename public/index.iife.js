@@ -349,7 +349,6 @@ var FixedPointScaling = (function () {
                 _this.applyTransform();
             };
             this.handleTranslate = function (nextX, nextY) {
-                console.log('handleTranslate', nextX, nextY);
                 _this.translate = {
                     x: nextX,
                     y: nextY,

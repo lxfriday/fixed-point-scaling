@@ -90,10 +90,8 @@
         translateEle = document.querySelector('#translate')
       const fixedPointScaling = new FixedPointScaling({
         target: document.querySelector('.box'),
-        onTransformChange(scale, x, y) {
-          scaleEle.innerText = `缩放倍数 ${Math.floor(scale * 100)}`
-          translateEle.innerText = `缩放倍数 ${JSON.stringify({ x, y })}`
-        },
+        enableScale: true,
+        enableKeyboardScale: true,
       })
     </script>
   </body>
