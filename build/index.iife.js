@@ -105,6 +105,10 @@ var FixedPointScaling = (function () {
              */
             this.enableWheelSlide = false;
             /**
+             * 是否是容器元素，默认 false
+             */
+            this.isWrapper = false;
+            /**
              * 当transform状态发生变化时的监听函数
              */
             this.onTransformChange = undefined;
@@ -128,6 +132,7 @@ var FixedPointScaling = (function () {
             this.onTransformChange = options.onTransformChange;
             this.enableKeyboardScale = this.mapBooleanOptions(options.enableKeyboardScale, false);
             this.enableWheelSlide = this.mapBooleanOptions(options.enableWheelSlide, false);
+            this.isWrapper = this.mapBooleanOptions(options.isWrapper, false);
             this.scale =
                 typeof options.defaultScale === 'number' ? options.defaultScale : 1;
             this.translate =
@@ -146,7 +151,8 @@ var FixedPointScaling = (function () {
                     this.transition = 'transform 0.1s';
                 }
             }
-            console.log(this, options.defaultScale);
+            window.wrapperScale = 1;
+            // -----------------
             this.init();
             this.run();
         }
@@ -233,14 +239,26 @@ var FixedPointScaling = (function () {
                         y: e.clientY,
                     };
                     // 负值往左，正值往右
-                    _this.translate = {
-                        x: _this.draggingSrcTranslate.x +
-                            cursorCurrentPos.x -
-                            _this.cursorSrcPos.x,
-                        y: _this.draggingSrcTranslate.y +
-                            cursorCurrentPos.y -
-                            _this.cursorSrcPos.y,
-                    };
+                    if (_this.isWrapper) {
+                        _this.translate = {
+                            x: _this.draggingSrcTranslate.x +
+                                cursorCurrentPos.x -
+                                _this.cursorSrcPos.x,
+                            y: _this.draggingSrcTranslate.y +
+                                cursorCurrentPos.y -
+                                _this.cursorSrcPos.y,
+                        };
+                    }
+                    else {
+                        _this.translate = {
+                            x: _this.draggingSrcTranslate.x +
+                                (cursorCurrentPos.x - _this.cursorSrcPos.x) /
+                                    window.wrapperScale,
+                            y: _this.draggingSrcTranslate.y +
+                                (cursorCurrentPos.y - _this.cursorSrcPos.y) /
+                                    window.wrapperScale,
+                        };
+                    }
                     _this.applyTransform();
                 }
             };
@@ -310,8 +328,10 @@ var FixedPointScaling = (function () {
                     x: cursorRelativeBasePosBefore.x * _this.scale,
                     y: cursorRelativeBasePosBefore.y * _this.scale,
                 };
-                var deltaX = cursorRelativePosAfter.x - cursorRelativePosBefore.x;
-                var deltaY = cursorRelativePosAfter.y - cursorRelativePosBefore.y;
+                var deltaX = (cursorRelativePosAfter.x - cursorRelativePosBefore.x) /
+                    (_this.isWrapper ? 1 : window.wrapperScale);
+                var deltaY = (cursorRelativePosAfter.y - cursorRelativePosBefore.y) /
+                    (_this.isWrapper ? 1 : window.wrapperScale);
                 _this.translate = {
                     x: Math.round(_this.translate.x - deltaX),
                     y: Math.round(_this.translate.y - deltaY),
@@ -350,8 +370,10 @@ var FixedPointScaling = (function () {
                         x: cursorRelativeBasePosBefore.x * _this.scale,
                         y: cursorRelativeBasePosBefore.y * _this.scale,
                     };
-                    var deltaX = cursorRelativePosBefore.x - cursorRelativePosAfter.x;
-                    var deltaY = cursorRelativePosBefore.y - cursorRelativePosAfter.y;
+                    var deltaX = (cursorRelativePosBefore.x - cursorRelativePosAfter.x) /
+                        (_this.isWrapper ? 1 : window.wrapperScale);
+                    var deltaY = (cursorRelativePosBefore.y - cursorRelativePosAfter.y) /
+                        (_this.isWrapper ? 1 : window.wrapperScale);
                     _this.translate = {
                         x: Math.round(_this.translate.x + deltaX),
                         y: Math.round(_this.translate.y + deltaY),
@@ -443,6 +465,8 @@ var FixedPointScaling = (function () {
             if (this.logTransformInfo) {
                 log("translateX: ".concat(this.translate.x, ", translateY: ").concat(this.translate.y, ", scale: ").concat(this.scale));
             }
+            if (this.isWrapper)
+                window.wrapperScale = this.scale;
         };
         /**
          * 重置 transform transform-origin
@@ -451,6 +475,8 @@ var FixedPointScaling = (function () {
             this.scale = 1;
             this.translate = { x: 0, y: 0 };
             this.target.style.transform = "matrix(".concat(this.scale, ", 0, 0, ").concat(this.scale, ", ").concat(this.translate.x, ", ").concat(this.translate.y, ")");
+            if (this.isWrapper)
+                window.wrapperScale = 1;
             this.onTransformChange &&
                 this.onTransformChange(parseFloat(this.scale.toFixed(2)), this.translate.x, this.translate.y);
             if (this.logTransformInfo) {

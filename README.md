@@ -150,4 +150,4 @@ export default class FixedPointScaling {
 
 - [onebox](https://qiniu1.lxfriday.xyz/feoffer/1675846507238_4ac80db3-f797-4e5e-8de3-1450f9e58329.html)
 - [twobox](https://qiniu1.lxfriday.xyz/feoffer/1675846524418_f1c9e447-528c-478c-92f7-9182c820f072.html)
-- [morebox](https://qiniu1.lxfriday.xyz/feoffer/1675846538192_908ef5a9-2537-4153-8ef9-32e1560befae.html)
+- [morebox](https://qiniu1.lxfriday.xyz/feoffer/1675849526930_cc65e4df-e7c0-4728-afd0-7bdedbe88e26.html)

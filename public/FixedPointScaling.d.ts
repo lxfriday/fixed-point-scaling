@@ -65,6 +65,10 @@ interface IOptions {
      */
     defaultScale?: number;
     /**
+     * 是否是容器元素
+     */
+    isWrapper?: boolean;
+    /**
      * 当transform状态发生变化时的监听函数
      */
     onTransformChange?(scale: number, translateX: number, translateY: number): void;
@@ -141,6 +145,10 @@ export default class FixedPointScaling {
      * - 为 `false` 的时候滚动不会移动 target
      */
     private enableWheelSlide?;
+    /**
+     * 是否是容器元素，默认 false
+     */
+    private isWrapper;
     /**
      * 当transform状态发生变化时的监听函数
      */

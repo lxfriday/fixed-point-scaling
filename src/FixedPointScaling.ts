@@ -63,6 +63,10 @@ interface IOptions {
    */
   defaultScale?: number
   /**
+   * 是否是容器元素
+   */
+  isWrapper?: boolean
+  /**
    * 当transform状态发生变化时的监听函数
    */
   onTransformChange?(
@@ -151,6 +155,10 @@ export default class FixedPointScaling {
    */
   private enableWheelSlide?: boolean = false
   /**
+   * 是否是容器元素，默认 false
+   */
+  private isWrapper: boolean = false
+  /**
    * 当transform状态发生变化时的监听函数
    */
   private onTransformChange:
@@ -238,7 +246,7 @@ export default class FixedPointScaling {
       options.enableWheelSlide,
       false,
     )
-
+    this.isWrapper = this.mapBooleanOptions(options.isWrapper, false)
     this.scale =
       typeof options.defaultScale === 'number' ? options.defaultScale : 1
     this.translate =
@@ -257,7 +265,10 @@ export default class FixedPointScaling {
         this.transition = 'transform 0.1s'
       }
     }
-    console.log(this, options.defaultScale)
+    // -----------------
+    // delete
+    ;(window as any).wrapperScale = 1
+    // -----------------
     this.init()
     this.run()
   }
@@ -339,16 +350,30 @@ export default class FixedPointScaling {
           y: e.clientY,
         }
         // 负值往左，正值往右
-        this.translate = {
-          x:
-            this.draggingSrcTranslate.x +
-            cursorCurrentPos.x -
-            this.cursorSrcPos.x,
-          y:
-            this.draggingSrcTranslate.y +
-            cursorCurrentPos.y -
-            this.cursorSrcPos.y,
+        if (this.isWrapper) {
+          this.translate = {
+            x:
+              this.draggingSrcTranslate.x +
+              cursorCurrentPos.x -
+              this.cursorSrcPos.x,
+            y:
+              this.draggingSrcTranslate.y +
+              cursorCurrentPos.y -
+              this.cursorSrcPos.y,
+          }
+        } else {
+          this.translate = {
+            x:
+              this.draggingSrcTranslate.x +
+              (cursorCurrentPos.x - this.cursorSrcPos.x) /
+                (window as any).wrapperScale,
+            y:
+              this.draggingSrcTranslate.y +
+              (cursorCurrentPos.y - this.cursorSrcPos.y) /
+                (window as any).wrapperScale,
+          }
         }
+
         this.applyTransform()
       }
     }
@@ -415,8 +440,12 @@ export default class FixedPointScaling {
         x: cursorRelativeBasePosBefore.x * this.scale,
         y: cursorRelativeBasePosBefore.y * this.scale,
       }
-      const deltaX = cursorRelativePosAfter.x - cursorRelativePosBefore.x
-      const deltaY = cursorRelativePosAfter.y - cursorRelativePosBefore.y
+      const deltaX =
+        (cursorRelativePosAfter.x - cursorRelativePosBefore.x) /
+        (this.isWrapper ? 1 : (window as any).wrapperScale)
+      const deltaY =
+        (cursorRelativePosAfter.y - cursorRelativePosBefore.y) /
+        (this.isWrapper ? 1 : (window as any).wrapperScale)
       this.translate = {
         x: Math.round(this.translate.x - deltaX),
         y: Math.round(this.translate.y - deltaY),
@@ -455,8 +484,12 @@ export default class FixedPointScaling {
           x: cursorRelativeBasePosBefore.x * this.scale,
           y: cursorRelativeBasePosBefore.y * this.scale,
         }
-        const deltaX = cursorRelativePosBefore.x - cursorRelativePosAfter.x
-        const deltaY = cursorRelativePosBefore.y - cursorRelativePosAfter.y
+        const deltaX =
+          (cursorRelativePosBefore.x - cursorRelativePosAfter.x) /
+          (this.isWrapper ? 1 : (window as any).wrapperScale)
+        const deltaY =
+          (cursorRelativePosBefore.y - cursorRelativePosAfter.y) /
+          (this.isWrapper ? 1 : (window as any).wrapperScale)
         this.translate = {
           x: Math.round(this.translate.x + deltaX),
           y: Math.round(this.translate.y + deltaY),
@@ -550,6 +583,7 @@ export default class FixedPointScaling {
         `translateX: ${this.translate.x}, translateY: ${this.translate.y}, scale: ${this.scale}`,
       )
     }
+    if(this.isWrapper) (window as any).wrapperScale = this.scale
   }
   /**
    * 重置 transform transform-origin
@@ -558,6 +592,7 @@ export default class FixedPointScaling {
     this.scale = 1
     this.translate = { x: 0, y: 0 }
     this.target!.style.transform = `matrix(${this.scale}, 0, 0, ${this.scale}, ${this.translate.x}, ${this.translate.y})`
+    if(this.isWrapper) (window as any).wrapperScale = 1
     this.onTransformChange &&
       this.onTransformChange(
         parseFloat(this.scale.toFixed(2)),
