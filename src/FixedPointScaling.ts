@@ -173,32 +173,32 @@ export default class FixedPointScaling {
   /**
    * 拖拽开始
    */
-  private handleDragStart?: (e: DragEvent) => void
+  private onDragStart?: (e: DragEvent) => void
   /**
    * 拖拽
    */
-  private handleDrag?: (e: DragEvent) => void
-  private handleDragOver?: (e: DragEvent) => void
+  private onDrag?: (e: DragEvent) => void
+  private onDragOver?: (e: DragEvent) => void
   /**
    * 拖拽结束
    */
-  private handleDragEnd?: (e: DragEvent) => void
+  private onDragEnd?: (e: DragEvent) => void
   /**
    * mousemove事件
    */
-  private handleMouseMove?: (e: MouseEvent) => void
+  private onMouseMove?: (e: MouseEvent) => void
   /**
    * 滚轮在目标区域内滚动
    */
-  private handleWheel?: (e: WheelEvent) => void
+  private onWheel?: (e: WheelEvent) => void
   /**
    * 在window窗口滚轮滚动
    */
-  private handleWindowWheel?: (e: WheelEvent) => void
+  private onWindowWheel?: (e: WheelEvent) => void
   /**
    * 键盘事件
    */
-  private handleKeyDown?: (e: KeyboardEvent) => void
+  private onKeyDown?: (e: KeyboardEvent) => void
   /**
    * 当前的 translate
    */
@@ -209,20 +209,20 @@ export default class FixedPointScaling {
    * - `base.y` 基点相对于浏览器窗口顶部的距离 top
    * - `nextScale` 接下来要放大的倍数
    */
-  public handleScaleUp?: (base?: { x: number; y: number }) => void
+  public onScaleUp?: (base?: { x: number; y: number }) => void
   /**
    * 普通缩小，使用键盘或者滚轮不在target区域内部
    * - `base.x` 基点相对于浏览器窗口左侧的距离 left
    * - `base.y` 基点相对于浏览器窗口顶部的距离 top
    * - `nextScale` 接下来要放大的倍数
    */
-  public handleScaleDown?: (base?: { x: number; y: number }) => void
+  public onScaleDown?: (base?: { x: number; y: number }) => void
   /**
    * 移动target
    * - `nextX` 接下来的 translateX
    * - `nextY` 接下来的 translateY
    */
-  public handleTranslate?: (nextX: number, nextY: number) => void
+  public onTranslate?: (nextX: number, nextY: number) => void
   private mapBooleanOptions(op: boolean | undefined, defaultValue: boolean) {
     if (op === true) return true
     if (op === false) return false
@@ -322,7 +322,7 @@ export default class FixedPointScaling {
   private applyListeners() {
     const target = this.target
     // window 发生滚动事件
-    this.handleWindowWheel = (e: WheelEvent) => {
+    this.onWindowWheel = (e: WheelEvent) => {
       // e.preventDefault()
       if (!e.ctrlKey) {
         // 允许滚轮
@@ -332,13 +332,13 @@ export default class FixedPointScaling {
         else if (e.deltaX > 0) horizontalFlag = 1
         if (e.deltaY < 0) verticalFlag = -1
         else if (e.deltaY > 0) verticalFlag = 1
-        this.handleTranslate!(
+        this.onTranslate!(
           this.translate.x + horizontalFlag * this.translateStep,
           this.translate.y + verticalFlag * this.translateStep,
         )
       }
     }
-    this.handleDragStart = (e: DragEvent) => {
+    this.onDragStart = (e: DragEvent) => {
       e.stopPropagation()
       this.log('dragstart', e)
       const target = this.target
@@ -354,7 +354,7 @@ export default class FixedPointScaling {
       }
     }
     // target 发生鼠标移动事件
-    this.handleDrag = (e: DragEvent) => {
+    this.onDrag = (e: DragEvent) => {
       e.stopPropagation()
       e.preventDefault()
       this.log('drag', e)
@@ -391,26 +391,26 @@ export default class FixedPointScaling {
         this.applyTransform()
       }
     }
-    this.handleDragOver = (e: DragEvent) => {
+    this.onDragOver = (e: DragEvent) => {
       e.preventDefault()
       e.stopPropagation()
     }
-    this.handleDragEnd = (e: DragEvent) => {
+    this.onDragEnd = (e: DragEvent) => {
       e.stopPropagation()
       this.isDragging = false
       this.onTranslateChange && this.onTranslateChange(this.translate)
       this.log('dragend', e)
     }
-    this.handleMouseMove = (e: MouseEvent) => {}
+    this.onMouseMove = (e: MouseEvent) => {}
     // target 发生鼠标滚动事件
-    this.handleWheel = (e: WheelEvent) => {
+    this.onWheel = (e: WheelEvent) => {
       if (this.enableScale && e.ctrlKey) {
         e.preventDefault()
         e.stopPropagation()
         if (this.bindWheelEventOnTarget && !this.checkCursorInTarget(e)) {
           this.log('鼠标不在 target 区域内')
-          if (e.deltaY < 0) this.handleScaleUp!()
-          else this.handleScaleDown!()
+          if (e.deltaY < 0) this.onScaleUp!()
+          else this.onScaleDown!()
           return
         }
         const cursorPos = {
@@ -419,9 +419,9 @@ export default class FixedPointScaling {
         }
         // 上滑，放大
         if (e.deltaY < 0) {
-          this.handleScaleUp!(cursorPos)
+          this.onScaleUp!(cursorPos)
         } else {
-          this.handleScaleDown!(cursorPos)
+          this.onScaleDown!(cursorPos)
         }
       }
     }
@@ -430,7 +430,7 @@ export default class FixedPointScaling {
      * - `baseX` 基点相对于浏览器窗口左侧的距离 left
      * - `baseY` 基点相对于浏览器窗口顶部的距离 top
      */
-    this.handleScaleUp = (base?: { x: number; y: number }) => {
+    this.onScaleUp = (base?: { x: number; y: number }) => {
       base =
         typeof base === 'object'
           ? base
@@ -478,7 +478,7 @@ export default class FixedPointScaling {
       }
     }
     // 键盘缩小
-    this.handleScaleDown = (base?: { x: number; y: number }) => {
+    this.onScaleDown = (base?: { x: number; y: number }) => {
       base =
         typeof base === 'object'
           ? base
@@ -527,50 +527,50 @@ export default class FixedPointScaling {
         }
       }
     }
-    this.handleTranslate = (nextX: number, nextY: number) => {
+    this.onTranslate = (nextX: number, nextY: number) => {
       this.translate = {
         x: nextX,
         y: nextY,
       }
       this.applyTransform()
     }
-    this.handleKeyDown = (e: KeyboardEvent) => {
-      this.log('handleKeyDown pressed: ', e.code)
+    this.onKeyDown = (e: KeyboardEvent) => {
+      this.log('onKeyDown pressed: ', e.code)
       if (this.enableScale && e.ctrlKey) {
         if (e.code === 'NumpadAdd' || e.code === 'Equal') {
           e.preventDefault()
-          this.handleScaleUp!()
+          this.onScaleUp!()
         } else if (e.code === 'NumpadSubtract' || e.code === 'Minus') {
           e.preventDefault()
-          this.handleScaleDown!()
+          this.onScaleDown!()
         } else if (e.code === 'Numpad0' || e.code === 'Digit0') {
           e.preventDefault()
           this.resetTransform()
         }
       }
     }
-    target!.addEventListener('dragstart', this.handleDragStart)
-    target!.addEventListener('drag', this.handleDrag)
-    target!.addEventListener('dragover', this.handleDragOver)
-    target!.addEventListener('dragend', this.handleDragEnd)
-    target!.addEventListener('mousemove', this.handleMouseMove)
+    target!.addEventListener('dragstart', this.onDragStart)
+    target!.addEventListener('drag', this.onDrag)
+    target!.addEventListener('dragover', this.onDragOver)
+    target!.addEventListener('dragend', this.onDragEnd)
+    target!.addEventListener('mousemove', this.onMouseMove)
     if (this.enableKeyboardScale) {
-      window.addEventListener('keydown', this.handleKeyDown)
+      window.addEventListener('keydown', this.onKeyDown)
     }
     if (this.bindWheelEventOnTarget) {
       if (this.enableScale)
-        target!.addEventListener('wheel', this.handleWheel, {
+        target!.addEventListener('wheel', this.onWheel, {
           passive: false,
         })
     } else {
       if (this.enableScale)
-        window.addEventListener('wheel', this.handleWheel, {
+        window.addEventListener('wheel', this.onWheel, {
           passive: false,
         })
     }
     // 是否禁止全局缩放
     if (this.enableWheelSlide) {
-      window.addEventListener('wheel', this.handleWindowWheel, {
+      window.addEventListener('wheel', this.onWindowWheel, {
         passive: false,
       })
     }
@@ -580,23 +580,23 @@ export default class FixedPointScaling {
    */
   public removeListeners() {
     const target = this.target
-    target!.removeEventListener('dragstart', this.handleDragStart!)
-    target!.removeEventListener('drag', this.handleDrag!)
-    target!.removeEventListener('dragover', this.handleDragOver!)
-    target!.removeEventListener('dragend', this.handleDragEnd!)
-    target!.removeEventListener('mousemove', this.handleMouseMove!)
+    target!.removeEventListener('dragstart', this.onDragStart!)
+    target!.removeEventListener('drag', this.onDrag!)
+    target!.removeEventListener('dragover', this.onDragOver!)
+    target!.removeEventListener('dragend', this.onDragEnd!)
+    target!.removeEventListener('mousemove', this.onMouseMove!)
     if (this.enableWheelSlide) {
-      window.removeEventListener('wheel', this.handleWindowWheel!)
+      window.removeEventListener('wheel', this.onWindowWheel!)
     }
     if (this.enableKeyboardScale) {
-      window.removeEventListener('keydown', this.handleKeyDown!)
+      window.removeEventListener('keydown', this.onKeyDown!)
     }
     if (this.bindWheelEventOnTarget) {
       if (this.enableScale)
-        target!.removeEventListener('wheel', this.handleWheel!)
+        target!.removeEventListener('wheel', this.onWheel!)
     } else {
       if (this.enableScale)
-        window!.removeEventListener('wheel', this.handleWheel!)
+        window!.removeEventListener('wheel', this.onWheel!)
     }
     this.log('listeners removed')
   }

@@ -168,32 +168,32 @@ export default class FixedPointScaling {
     /**
      * 拖拽开始
      */
-    private handleDragStart?;
+    private onDragStart?;
     /**
      * 拖拽
      */
-    private handleDrag?;
-    private handleDragOver?;
+    private onDrag?;
+    private onDragOver?;
     /**
      * 拖拽结束
      */
-    private handleDragEnd?;
+    private onDragEnd?;
     /**
      * mousemove事件
      */
-    private handleMouseMove?;
+    private onMouseMove?;
     /**
      * 滚轮在目标区域内滚动
      */
-    private handleWheel?;
+    private onWheel?;
     /**
      * 在window窗口滚轮滚动
      */
-    private handleWindowWheel?;
+    private onWindowWheel?;
     /**
      * 键盘事件
      */
-    private handleKeyDown?;
+    private onKeyDown?;
     /**
      * 当前的 translate
      */
@@ -207,7 +207,7 @@ export default class FixedPointScaling {
      * - `base.y` 基点相对于浏览器窗口顶部的距离 top
      * - `nextScale` 接下来要放大的倍数
      */
-    handleScaleUp?: (base?: {
+    onScaleUp?: (base?: {
         x: number;
         y: number;
     }) => void;
@@ -217,7 +217,7 @@ export default class FixedPointScaling {
      * - `base.y` 基点相对于浏览器窗口顶部的距离 top
      * - `nextScale` 接下来要放大的倍数
      */
-    handleScaleDown?: (base?: {
+    onScaleDown?: (base?: {
         x: number;
         y: number;
     }) => void;
@@ -226,7 +226,7 @@ export default class FixedPointScaling {
      * - `nextX` 接下来的 translateX
      * - `nextY` 接下来的 translateY
      */
-    handleTranslate?: (nextX: number, nextY: number) => void;
+    onTranslate?: (nextX: number, nextY: number) => void;
     private mapBooleanOptions;
     private log;
     constructor(options: IOptions);

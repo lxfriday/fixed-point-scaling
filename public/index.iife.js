@@ -207,7 +207,7 @@ var FixedPointScaling = (function () {
             var _this = this;
             var target = this.target;
             // window 发生滚动事件
-            this.handleWindowWheel = function (e) {
+            this.onWindowWheel = function (e) {
                 // e.preventDefault()
                 if (!e.ctrlKey) {
                     // 允许滚轮
@@ -220,10 +220,10 @@ var FixedPointScaling = (function () {
                         verticalFlag = -1;
                     else if (e.deltaY > 0)
                         verticalFlag = 1;
-                    _this.handleTranslate(_this.translate.x + horizontalFlag * _this.translateStep, _this.translate.y + verticalFlag * _this.translateStep);
+                    _this.onTranslate(_this.translate.x + horizontalFlag * _this.translateStep, _this.translate.y + verticalFlag * _this.translateStep);
                 }
             };
-            this.handleDragStart = function (e) {
+            this.onDragStart = function (e) {
                 e.stopPropagation();
                 _this.log('dragstart', e);
                 var target = _this.target;
@@ -239,7 +239,7 @@ var FixedPointScaling = (function () {
                 };
             };
             // target 发生鼠标移动事件
-            this.handleDrag = function (e) {
+            this.onDrag = function (e) {
                 e.stopPropagation();
                 e.preventDefault();
                 _this.log('drag', e);
@@ -272,28 +272,28 @@ var FixedPointScaling = (function () {
                     _this.applyTransform();
                 }
             };
-            this.handleDragOver = function (e) {
+            this.onDragOver = function (e) {
                 e.preventDefault();
                 e.stopPropagation();
             };
-            this.handleDragEnd = function (e) {
+            this.onDragEnd = function (e) {
                 e.stopPropagation();
                 _this.isDragging = false;
                 _this.onTranslateChange && _this.onTranslateChange(_this.translate);
                 _this.log('dragend', e);
             };
-            this.handleMouseMove = function (e) { };
+            this.onMouseMove = function (e) { };
             // target 发生鼠标滚动事件
-            this.handleWheel = function (e) {
+            this.onWheel = function (e) {
                 if (_this.enableScale && e.ctrlKey) {
                     e.preventDefault();
                     e.stopPropagation();
                     if (_this.bindWheelEventOnTarget && !_this.checkCursorInTarget(e)) {
                         _this.log('鼠标不在 target 区域内');
                         if (e.deltaY < 0)
-                            _this.handleScaleUp();
+                            _this.onScaleUp();
                         else
-                            _this.handleScaleDown();
+                            _this.onScaleDown();
                         return;
                     }
                     var cursorPos = {
@@ -302,10 +302,10 @@ var FixedPointScaling = (function () {
                     };
                     // 上滑，放大
                     if (e.deltaY < 0) {
-                        _this.handleScaleUp(cursorPos);
+                        _this.onScaleUp(cursorPos);
                     }
                     else {
-                        _this.handleScaleDown(cursorPos);
+                        _this.onScaleDown(cursorPos);
                     }
                 }
             };
@@ -314,7 +314,7 @@ var FixedPointScaling = (function () {
              * - `baseX` 基点相对于浏览器窗口左侧的距离 left
              * - `baseY` 基点相对于浏览器窗口顶部的距离 top
              */
-            this.handleScaleUp = function (base) {
+            this.onScaleUp = function (base) {
                 base =
                     typeof base === 'object'
                         ? base
@@ -360,7 +360,7 @@ var FixedPointScaling = (function () {
                 }
             };
             // 键盘缩小
-            this.handleScaleDown = function (base) {
+            this.onScaleDown = function (base) {
                 base =
                     typeof base === 'object'
                         ? base
@@ -407,23 +407,23 @@ var FixedPointScaling = (function () {
                     }
                 }
             };
-            this.handleTranslate = function (nextX, nextY) {
+            this.onTranslate = function (nextX, nextY) {
                 _this.translate = {
                     x: nextX,
                     y: nextY,
                 };
                 _this.applyTransform();
             };
-            this.handleKeyDown = function (e) {
-                _this.log('handleKeyDown pressed: ', e.code);
+            this.onKeyDown = function (e) {
+                _this.log('onKeyDown pressed: ', e.code);
                 if (_this.enableScale && e.ctrlKey) {
                     if (e.code === 'NumpadAdd' || e.code === 'Equal') {
                         e.preventDefault();
-                        _this.handleScaleUp();
+                        _this.onScaleUp();
                     }
                     else if (e.code === 'NumpadSubtract' || e.code === 'Minus') {
                         e.preventDefault();
-                        _this.handleScaleDown();
+                        _this.onScaleDown();
                     }
                     else if (e.code === 'Numpad0' || e.code === 'Digit0') {
                         e.preventDefault();
@@ -431,29 +431,29 @@ var FixedPointScaling = (function () {
                     }
                 }
             };
-            target.addEventListener('dragstart', this.handleDragStart);
-            target.addEventListener('drag', this.handleDrag);
-            target.addEventListener('dragover', this.handleDragOver);
-            target.addEventListener('dragend', this.handleDragEnd);
-            target.addEventListener('mousemove', this.handleMouseMove);
+            target.addEventListener('dragstart', this.onDragStart);
+            target.addEventListener('drag', this.onDrag);
+            target.addEventListener('dragover', this.onDragOver);
+            target.addEventListener('dragend', this.onDragEnd);
+            target.addEventListener('mousemove', this.onMouseMove);
             if (this.enableKeyboardScale) {
-                window.addEventListener('keydown', this.handleKeyDown);
+                window.addEventListener('keydown', this.onKeyDown);
             }
             if (this.bindWheelEventOnTarget) {
                 if (this.enableScale)
-                    target.addEventListener('wheel', this.handleWheel, {
+                    target.addEventListener('wheel', this.onWheel, {
                         passive: false,
                     });
             }
             else {
                 if (this.enableScale)
-                    window.addEventListener('wheel', this.handleWheel, {
+                    window.addEventListener('wheel', this.onWheel, {
                         passive: false,
                     });
             }
             // 是否禁止全局缩放
             if (this.enableWheelSlide) {
-                window.addEventListener('wheel', this.handleWindowWheel, {
+                window.addEventListener('wheel', this.onWindowWheel, {
                     passive: false,
                 });
             }
@@ -463,24 +463,24 @@ var FixedPointScaling = (function () {
          */
         FixedPointScaling.prototype.removeListeners = function () {
             var target = this.target;
-            target.removeEventListener('dragstart', this.handleDragStart);
-            target.removeEventListener('drag', this.handleDrag);
-            target.removeEventListener('dragover', this.handleDragOver);
-            target.removeEventListener('dragend', this.handleDragEnd);
-            target.removeEventListener('mousemove', this.handleMouseMove);
+            target.removeEventListener('dragstart', this.onDragStart);
+            target.removeEventListener('drag', this.onDrag);
+            target.removeEventListener('dragover', this.onDragOver);
+            target.removeEventListener('dragend', this.onDragEnd);
+            target.removeEventListener('mousemove', this.onMouseMove);
             if (this.enableWheelSlide) {
-                window.removeEventListener('wheel', this.handleWindowWheel);
+                window.removeEventListener('wheel', this.onWindowWheel);
             }
             if (this.enableKeyboardScale) {
-                window.removeEventListener('keydown', this.handleKeyDown);
+                window.removeEventListener('keydown', this.onKeyDown);
             }
             if (this.bindWheelEventOnTarget) {
                 if (this.enableScale)
-                    target.removeEventListener('wheel', this.handleWheel);
+                    target.removeEventListener('wheel', this.onWheel);
             }
             else {
                 if (this.enableScale)
-                    window.removeEventListener('wheel', this.handleWheel);
+                    window.removeEventListener('wheel', this.onWheel);
             }
             this.log('listeners removed');
         };
