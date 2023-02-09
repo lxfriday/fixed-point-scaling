@@ -39,7 +39,7 @@ interface IOptions {
   /**
    * 是否打印transform的状态信息 dev 时使用，默认 `false`
    */
-  logTransformInfo?: boolean
+  showLog?: boolean
   /**
    * 是否使用允许键盘来缩放目标，默认 `false`
    */
@@ -76,16 +76,13 @@ interface IOptions {
   onScaleChange?(scale: number): void
 }
 
-function log(...arg: any[]) {
-  console.log(...arg)
-}
-
 // 拖动时去用来替换的透明图
 const draggingImage = new Image()
 draggingImage.src =
   'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8AAAAAAAAFAAFkeJU4AAAAAElFTkSuQmCC'
 
 export default class FixedPointScaling {
+  static wrapperScale: number = 1
   /**
    * 目标元素
    */
@@ -140,7 +137,7 @@ export default class FixedPointScaling {
   /**
    * 是否显示transform的状态信息 dev 时使用，默认为 `false`
    */
-  private logTransformInfo: boolean = false
+  private showLog: boolean = false
   /**
    * 是否使用允许键盘来缩放目标，默认为 `false`
    */
@@ -231,6 +228,13 @@ export default class FixedPointScaling {
     if (op === false) return false
     return defaultValue
   }
+
+  private log(...args: any[]) {
+    if (this.showLog) {
+      console.log(...args)
+    }
+  }
+
   constructor(options: IOptions) {
     this.target = options.target
     this.bindWheelEventOnTarget = this.mapBooleanOptions(
@@ -243,10 +247,7 @@ export default class FixedPointScaling {
     this.translateStep =
       typeof options.translateStep === 'number' ? options.translateStep : 10
     this.minScale = options.minScale || 0.05
-    this.logTransformInfo = this.mapBooleanOptions(
-      options.logTransformInfo,
-      false,
-    )
+    this.showLog = this.mapBooleanOptions(options.showLog, false)
     this.onTranslateChange = options.onTranslateChange
     this.onScaleChange = options.onScaleChange
     this.enableKeyboardScale = this.mapBooleanOptions(
@@ -276,10 +277,6 @@ export default class FixedPointScaling {
         this.transition = 'transform 0.1s'
       }
     }
-    // -----------------
-    // delete
-    ;(window as any).wrapperScale = 1
-    // -----------------
     this.init()
     this.run()
   }
@@ -343,7 +340,7 @@ export default class FixedPointScaling {
     }
     this.handleDragStart = (e: DragEvent) => {
       e.stopPropagation()
-      log('dragstart', e)
+      this.log('dragstart', e)
       const target = this.target
       this.normalCursorType = target!.style.cursor
       // 删除拖拽时的虚框
@@ -360,7 +357,7 @@ export default class FixedPointScaling {
     this.handleDrag = (e: DragEvent) => {
       e.stopPropagation()
       e.preventDefault()
-      log('drag', e)
+      this.log('drag', e)
       if (this.isDragging) {
         const cursorCurrentPos = {
           x: e.clientX,
@@ -383,11 +380,11 @@ export default class FixedPointScaling {
             x:
               this.draggingSrcTranslate.x +
               (cursorCurrentPos.x - this.cursorSrcPos.x) /
-                (window as any).wrapperScale,
+                FixedPointScaling.wrapperScale,
             y:
               this.draggingSrcTranslate.y +
               (cursorCurrentPos.y - this.cursorSrcPos.y) /
-                (window as any).wrapperScale,
+                FixedPointScaling.wrapperScale,
           }
         }
 
@@ -402,7 +399,7 @@ export default class FixedPointScaling {
       e.stopPropagation()
       this.isDragging = false
       this.onTranslateChange && this.onTranslateChange(this.translate)
-      log('dragend', e)
+      this.log('dragend', e)
     }
     this.handleMouseMove = (e: MouseEvent) => {}
     // target 发生鼠标滚动事件
@@ -411,7 +408,7 @@ export default class FixedPointScaling {
         e.preventDefault()
         e.stopPropagation()
         if (this.bindWheelEventOnTarget && !this.checkCursorInTarget(e)) {
-          log('鼠标不在 target 区域内')
+          this.log('鼠标不在 target 区域内')
           if (e.deltaY < 0) this.handleScaleUp!()
           else this.handleScaleDown!()
           return
@@ -465,10 +462,10 @@ export default class FixedPointScaling {
       }
       const deltaX =
         (cursorRelativePosAfter.x - cursorRelativePosBefore.x) /
-        (this.isWrapper ? 1 : (window as any).wrapperScale)
+        (this.isWrapper ? 1 : FixedPointScaling.wrapperScale)
       const deltaY =
         (cursorRelativePosAfter.y - cursorRelativePosBefore.y) /
-        (this.isWrapper ? 1 : (window as any).wrapperScale)
+        (this.isWrapper ? 1 : FixedPointScaling.wrapperScale)
       this.translate = {
         x: Math.round(this.translate.x - deltaX),
         y: Math.round(this.translate.y - deltaY),
@@ -477,7 +474,7 @@ export default class FixedPointScaling {
       this.onScaleChange &&
         this.onScaleChange(parseFloat(this.scale.toFixed(2)))
       if (this.isWrapper) {
-        ;(window as any).wrapperScale = this.scale
+        FixedPointScaling.wrapperScale = this.scale
       }
     }
     // 键盘缩小
@@ -514,10 +511,10 @@ export default class FixedPointScaling {
         }
         const deltaX =
           (cursorRelativePosBefore.x - cursorRelativePosAfter.x) /
-          (this.isWrapper ? 1 : (window as any).wrapperScale)
+          (this.isWrapper ? 1 : FixedPointScaling.wrapperScale)
         const deltaY =
           (cursorRelativePosBefore.y - cursorRelativePosAfter.y) /
-          (this.isWrapper ? 1 : (window as any).wrapperScale)
+          (this.isWrapper ? 1 : FixedPointScaling.wrapperScale)
         this.translate = {
           x: Math.round(this.translate.x + deltaX),
           y: Math.round(this.translate.y + deltaY),
@@ -526,7 +523,7 @@ export default class FixedPointScaling {
         this.onScaleChange &&
           this.onScaleChange(parseFloat(this.scale.toFixed(2)))
         if (this.isWrapper) {
-          ;(window as any).wrapperScale = this.scale
+          FixedPointScaling.wrapperScale = this.scale
         }
       }
     }
@@ -538,7 +535,7 @@ export default class FixedPointScaling {
       this.applyTransform()
     }
     this.handleKeyDown = (e: KeyboardEvent) => {
-      log('handleKeyDown pressed: ', e.code)
+      this.log('handleKeyDown pressed: ', e.code)
       if (this.enableScale && e.ctrlKey) {
         if (e.code === 'NumpadAdd' || e.code === 'Equal') {
           e.preventDefault()
@@ -601,19 +598,16 @@ export default class FixedPointScaling {
       if (this.enableScale)
         window!.removeEventListener('wheel', this.handleWheel!)
     }
-    log('listeners removed')
+    this.log('listeners removed')
   }
   /**
    * 应用transform属性
    */
   private applyTransform() {
     this.target!.style.transform = `matrix(${this.scale}, 0, 0, ${this.scale}, ${this.translate.x}, ${this.translate.y})`
-    if (this.logTransformInfo) {
-      log(
-        `translateX: ${this.translate.x}, translateY: ${this.translate.y}, scale: ${this.scale}`,
-      )
-    }
-    if (this.isWrapper) (window as any).wrapperScale = this.scale
+    this.log(
+      `translateX: ${this.translate.x}, translateY: ${this.translate.y}, scale: ${this.scale}`,
+    )
   }
   /**
    * 重置 translate scale
@@ -622,18 +616,15 @@ export default class FixedPointScaling {
     this.scale = 1
     this.translate = { x: 0, y: 0 }
     this.target!.style.transform = `matrix(${this.scale}, 0, 0, ${this.scale}, ${this.translate.x}, ${this.translate.y})`
-    if (this.isWrapper) (window as any).wrapperScale = 1
+    if (this.isWrapper) FixedPointScaling.wrapperScale = 1
     this.onTranslateChange && this.onTranslateChange(this.translate)
     this.onScaleChange && this.onScaleChange(parseFloat(this.scale.toFixed(2)))
-    if (this.logTransformInfo) {
-      log(
-        `translateX: ${this.translate.x}, translateY: ${this.translate.y}, scale: ${this.scale}`,
-      )
-    }
+    this.log(
+      `translateX: ${this.translate.x}, translateY: ${this.translate.y}, scale: ${this.scale}`,
+    )
   }
 }
 
 // 修改拖拽时的鼠标样式
 // 考虑用户自定义样式
-// 拆分出单独的 scaleChange 和 translateChange 事件
-// 拖拽时要等拖拽结束才触发 translateChange，不需要动一次就触发一次
+// 把事件都迁移 class 属性上

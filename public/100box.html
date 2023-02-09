@@ -102,6 +102,7 @@
           target: box,
           enableScale: true,
           defaultTranslate: { x: i * 20, y: i * 10 },
+          showLog: true,
         })
         fragment.append(box)
       })
@@ -113,6 +114,7 @@
         new FixedPointScaling({
           target: img,
           enableScale: true,
+          showLog: true,
           defaultTranslate: { x: 500 + i * 20, y: 500 + i * 10 },
         })
         fragment.append(img)
@@ -125,12 +127,13 @@
         enableScale: true,
         isWrapper: true,
         enableKeyboardScale: true,
-        onTranslateChange({x, y}) {
+        showLog: true,
+        onTranslateChange({ x, y }) {
           translateEle.innerText = `translate ${JSON.stringify({ x, y })}`
         },
         onScaleChange(scale) {
           scaleEle.innerText = `scale ${Math.floor(scale * 100)}`
-        }
+        },
       })
     </script>
   </body>

@@ -38,7 +38,7 @@ interface IOptions {
     /**
      * 是否打印transform的状态信息 dev 时使用，默认 `false`
      */
-    logTransformInfo?: boolean;
+    showLog?: boolean;
     /**
      * 是否使用允许键盘来缩放目标，默认 `false`
      */
@@ -81,6 +81,7 @@ interface IOptions {
     onScaleChange?(scale: number): void;
 }
 export default class FixedPointScaling {
+    static wrapperScale: number;
     /**
      * 目标元素
      */
@@ -133,7 +134,7 @@ export default class FixedPointScaling {
     /**
      * 是否显示transform的状态信息 dev 时使用，默认为 `false`
      */
-    private logTransformInfo;
+    private showLog;
     /**
      * 是否使用允许键盘来缩放目标，默认为 `false`
      */
@@ -227,6 +228,7 @@ export default class FixedPointScaling {
      */
     handleTranslate?: (nextX: number, nextY: number) => void;
     private mapBooleanOptions;
+    private log;
     constructor(options: IOptions);
     /**
      * 初始化一些信息
