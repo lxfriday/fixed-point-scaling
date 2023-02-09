@@ -34,6 +34,10 @@ var FixedPointScaling = (function () {
         }
         console.log.apply(console, arg);
     }
+    // 拖动时去用来替换的透明图
+    var draggingImage = new Image();
+    draggingImage.src =
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAQSURBVHgBAQUA+v8AAAAAAAAFAAFkeJU4AAAAAElFTkSuQmCC';
     var FixedPointScaling = /** @class */ (function () {
         function FixedPointScaling(options) {
             /**
@@ -109,9 +113,13 @@ var FixedPointScaling = (function () {
              */
             this.isWrapper = false;
             /**
-             * 当transform状态发生变化时的监听函数
+             * 拖拽结束的时候触发
              */
-            this.onTransformChange = undefined;
+            this.onTranslateChange = undefined;
+            /**
+             * 缩放的时候触发
+             */
+            this.onScaleChange = undefined;
             /**
              * 当前的 translate
              */
@@ -119,17 +127,14 @@ var FixedPointScaling = (function () {
             this.target = options.target;
             this.bindWheelEventOnTarget = this.mapBooleanOptions(options.bindWheelEventOnTarget, true);
             this.enableScale = this.mapBooleanOptions(options.enableScale, false);
-            // this.enableWindowScale = this.mapBooleanOptions(
-            //   options.enableWindowScale,
-            //   false,
-            // )
             this.scaleStep =
                 typeof options.scaleStep === 'number' ? options.scaleStep : 0.1;
             this.translateStep =
                 typeof options.translateStep === 'number' ? options.translateStep : 10;
             this.minScale = options.minScale || 0.05;
             this.logTransformInfo = this.mapBooleanOptions(options.logTransformInfo, false);
-            this.onTransformChange = options.onTransformChange;
+            this.onTranslateChange = options.onTranslateChange;
+            this.onScaleChange = options.onScaleChange;
             this.enableKeyboardScale = this.mapBooleanOptions(options.enableKeyboardScale, false);
             this.enableWheelSlide = this.mapBooleanOptions(options.enableWheelSlide, false);
             this.isWrapper = this.mapBooleanOptions(options.isWrapper, false);
@@ -173,6 +178,7 @@ var FixedPointScaling = (function () {
             var target = this.target;
             target.style.transformOrigin = '0 0'; // origin 设置为左上角
             target.style.transition = this.transition;
+            target.draggable = true;
             this.applyTransform();
         };
         /**
@@ -217,12 +223,14 @@ var FixedPointScaling = (function () {
                     _this.handleTranslate(_this.translate.x + horizontalFlag * _this.translateStep, _this.translate.y + verticalFlag * _this.translateStep);
                 }
             };
-            // target 发生鼠标按下事件
-            this.handleMouseDown = function (e) {
+            this.handleDragStart = function (e) {
                 e.stopPropagation();
+                log('dragstart', e);
                 var target = _this.target;
                 _this.normalCursorType = target.style.cursor;
-                target.style.cursor = _this.draggingCursorType;
+                // 删除拖拽时的虚框
+                e.dataTransfer.setDragImage(draggingImage, 0, 0);
+                e.dataTransfer.effectAllowed = 'move';
                 _this.isDragging = true;
                 _this.draggingSrcTranslate = __assign({}, _this.translate);
                 _this.cursorSrcPos = {
@@ -231,8 +239,10 @@ var FixedPointScaling = (function () {
                 };
             };
             // target 发生鼠标移动事件
-            this.handleMouseMove = function (e) {
+            this.handleDrag = function (e) {
                 e.stopPropagation();
+                e.preventDefault();
+                log('drag', e);
                 if (_this.isDragging) {
                     var cursorCurrentPos = {
                         x: e.clientX,
@@ -262,11 +272,17 @@ var FixedPointScaling = (function () {
                     _this.applyTransform();
                 }
             };
-            // target 发生鼠标松开事件
-            this.handleWindowMouseUp = function (e) {
-                _this.isDragging = false;
-                target.style.cursor = _this.normalCursorType;
+            this.handleDragOver = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
             };
+            this.handleDragEnd = function (e) {
+                e.stopPropagation();
+                _this.isDragging = false;
+                _this.onTranslateChange && _this.onTranslateChange(_this.translate);
+                log('dragend', e);
+            };
+            this.handleMouseMove = function (e) { };
             // target 发生鼠标滚动事件
             this.handleWheel = function (e) {
                 if (_this.enableScale && e.ctrlKey) {
@@ -337,6 +353,11 @@ var FixedPointScaling = (function () {
                     y: Math.round(_this.translate.y - deltaY),
                 };
                 _this.applyTransform();
+                _this.onScaleChange &&
+                    _this.onScaleChange(parseFloat(_this.scale.toFixed(2)));
+                if (_this.isWrapper) {
+                    window.wrapperScale = _this.scale;
+                }
             };
             // 键盘缩小
             this.handleScaleDown = function (base) {
@@ -378,8 +399,13 @@ var FixedPointScaling = (function () {
                         x: Math.round(_this.translate.x + deltaX),
                         y: Math.round(_this.translate.y + deltaY),
                     };
+                    _this.applyTransform();
+                    _this.onScaleChange &&
+                        _this.onScaleChange(parseFloat(_this.scale.toFixed(2)));
+                    if (_this.isWrapper) {
+                        window.wrapperScale = _this.scale;
+                    }
                 }
-                _this.applyTransform();
             };
             this.handleTranslate = function (nextX, nextY) {
                 _this.translate = {
@@ -405,10 +431,11 @@ var FixedPointScaling = (function () {
                     }
                 }
             };
-            target.addEventListener('mousedown', this.handleMouseDown);
+            target.addEventListener('dragstart', this.handleDragStart);
+            target.addEventListener('drag', this.handleDrag);
+            target.addEventListener('dragover', this.handleDragOver);
+            target.addEventListener('dragend', this.handleDragEnd);
             target.addEventListener('mousemove', this.handleMouseMove);
-            // 这里需要window级监听，防止鼠标移动到浏览器外松开
-            window.addEventListener('mouseup', this.handleWindowMouseUp);
             if (this.enableKeyboardScale) {
                 window.addEventListener('keydown', this.handleKeyDown);
             }
@@ -436,9 +463,11 @@ var FixedPointScaling = (function () {
          */
         FixedPointScaling.prototype.removeListeners = function () {
             var target = this.target;
-            target.removeEventListener('mousedown', this.handleMouseDown);
+            target.removeEventListener('dragstart', this.handleDragStart);
+            target.removeEventListener('drag', this.handleDrag);
+            target.removeEventListener('dragover', this.handleDragOver);
+            target.removeEventListener('dragend', this.handleDragEnd);
             target.removeEventListener('mousemove', this.handleMouseMove);
-            window.removeEventListener('mouseup', this.handleWindowMouseUp);
             if (this.enableWheelSlide) {
                 window.removeEventListener('wheel', this.handleWindowWheel);
             }
@@ -460,8 +489,6 @@ var FixedPointScaling = (function () {
          */
         FixedPointScaling.prototype.applyTransform = function () {
             this.target.style.transform = "matrix(".concat(this.scale, ", 0, 0, ").concat(this.scale, ", ").concat(this.translate.x, ", ").concat(this.translate.y, ")");
-            this.onTransformChange &&
-                this.onTransformChange(parseFloat(this.scale.toFixed(2)), this.translate.x, this.translate.y);
             if (this.logTransformInfo) {
                 log("translateX: ".concat(this.translate.x, ", translateY: ").concat(this.translate.y, ", scale: ").concat(this.scale));
             }
@@ -469,7 +496,7 @@ var FixedPointScaling = (function () {
                 window.wrapperScale = this.scale;
         };
         /**
-         * 重置 transform transform-origin
+         * 重置 translate scale
          */
         FixedPointScaling.prototype.resetTransform = function () {
             this.scale = 1;
@@ -477,17 +504,18 @@ var FixedPointScaling = (function () {
             this.target.style.transform = "matrix(".concat(this.scale, ", 0, 0, ").concat(this.scale, ", ").concat(this.translate.x, ", ").concat(this.translate.y, ")");
             if (this.isWrapper)
                 window.wrapperScale = 1;
-            this.onTransformChange &&
-                this.onTransformChange(parseFloat(this.scale.toFixed(2)), this.translate.x, this.translate.y);
+            this.onTranslateChange && this.onTranslateChange(this.translate);
+            this.onScaleChange && this.onScaleChange(parseFloat(this.scale.toFixed(2)));
             if (this.logTransformInfo) {
                 log("translateX: ".concat(this.translate.x, ", translateY: ").concat(this.translate.y, ", scale: ").concat(this.scale));
             }
         };
         return FixedPointScaling;
     }());
-    // 默认要绑定到target上
-    // 滚轮默认禁用
-    // 默认禁止缩放
+    // 修改拖拽时的鼠标样式
+    // 考虑用户自定义样式
+    // 拆分出单独的 scaleChange 和 translateChange 事件
+    // 拖拽时要等拖拽结束才触发 translateChange，不需要动一次就触发一次
 
     return FixedPointScaling;
 

@@ -69,9 +69,16 @@ interface IOptions {
      */
     isWrapper?: boolean;
     /**
-     * 当transform状态发生变化时的监听函数
+     * 拖拽结束的时候触发
      */
-    onTransformChange?(scale: number, translateX: number, translateY: number): void;
+    onTranslateChange?(translate: {
+        x: number;
+        y: number;
+    }): void;
+    /**
+     * 缩放的时候触发
+     */
+    onScaleChange?(scale: number): void;
 }
 export default class FixedPointScaling {
     /**
@@ -150,21 +157,30 @@ export default class FixedPointScaling {
      */
     private isWrapper;
     /**
-     * 当transform状态发生变化时的监听函数
+     * 拖拽结束的时候触发
      */
-    private onTransformChange;
+    private onTranslateChange;
     /**
-     * 鼠标在 target 内按下
+     * 缩放的时候触发
      */
-    private handleMouseDown?;
+    private onScaleChange;
     /**
-     * 滚轮滚动
+     * 拖拽开始
+     */
+    private handleDragStart?;
+    /**
+     * 拖拽
+     */
+    private handleDrag?;
+    private handleDragOver?;
+    /**
+     * 拖拽结束
+     */
+    private handleDragEnd?;
+    /**
+     * mousemove事件
      */
     private handleMouseMove?;
-    /**
-     * 鼠标按键松开
-     */
-    private handleWindowMouseUp?;
     /**
      * 滚轮在目标区域内滚动
      */
@@ -234,7 +250,7 @@ export default class FixedPointScaling {
      */
     private applyTransform;
     /**
-     * 重置 transform transform-origin
+     * 重置 translate scale
      */
     resetTransform(): void;
 }

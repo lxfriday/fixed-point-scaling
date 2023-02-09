@@ -11,11 +11,11 @@
         overflow: hidden;
       }
       .wrapper {
-        left: calc(50% - 900px);
-        top: 50px;
+        left: calc(50% - 250px);
+        top: 100px;
         position: absolute;
-        width: 1800px;
-        height: 1000px;
+        width: 500px;
+        height: 500px;
         background-color: #ccc;
       }
       .lineVer,
@@ -36,19 +36,10 @@
         left: 0;
         background-color: red;
       }
-      .box,
-      img {
-        position: absolute;
-        left: 0;
-        top: 0;
+      .box {
         width: 200px;
         height: 200px;
         background-color: bisque;
-        border: 1px solid #333;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        user-select: none;
       }
       .dot,
       .boxDot {
@@ -89,48 +80,26 @@
       <div class="dot"></div>
     </div>
     <script src="./index.iife.js"></script>
-    <!-- <script src="https://qiniu1.lxfriday.xyz/feoffer/1675849494035_93a8a00c-ac13-446a-9d72-df15a767af64.js"></script> -->
     <script>
       const scaleEle = document.querySelector('#scale'),
         translateEle = document.querySelector('#translate')
-      const fragment = document.createDocumentFragment()
-      new Array(50).fill(0).map((_, i) => {
-        const box = document.createElement('div')
-        box.classList.add('box')
-        box.innerText = i
-        new FixedPointScaling({
-          target: box,
-          enableScale: true,
-          defaultTranslate: { x: i * 20, y: i * 10 },
-        })
-        fragment.append(box)
+      const boxScaler = new FixedPointScaling({
+        target: document.querySelector('.box'),
+        enableScale: true,
+        onTransformChange(scale, x, y) {
+          scaleEle.innerText = `缩放倍数 ${Math.floor(scale * 100)}`
+          translateEle.innerText = `缩放倍数 ${JSON.stringify({ x, y })}`
+        },
       })
-      new Array(50).fill(0).map((_, i) => {
-        const img = document.createElement('img')
-        img.src =
-          'https://qiniu1.lxfriday.xyz/SAO/005GOaLIgy1fyc35ofomnj3073073q2u_1650024899487_66218e6a-8df8-4cd9-9062-0c0d40895f64.jpg'
-        img.draggable = false
-        new FixedPointScaling({
-          target: img,
-          enableScale: true,
-          defaultTranslate: { x: 500 + i * 20, y: 500 + i * 10 },
-        })
-        fragment.append(img)
-      })
-
-      document.querySelector('.wrapper').append(fragment)
-
       const wrapperScaler = new FixedPointScaling({
         target: document.querySelector('.wrapper'),
+        defaultScale: 3,
         enableScale: true,
-        isWrapper: true,
-        enableKeyboardScale: true,
-        onTranslateChange({x, y}) {
-          translateEle.innerText = `translate ${JSON.stringify({ x, y })}`
+        bindWheelEventOnTarget: false,
+        onTransformChange(scale, x, y) {
+          scaleEle.innerText = `缩放倍数 ${Math.floor(scale * 100)}`
+          translateEle.innerText = `缩放倍数 ${JSON.stringify({ x, y })}`
         },
-        onScaleChange(scale) {
-          scaleEle.innerText = `scale ${Math.floor(scale * 100)}`
-        }
       })
     </script>
   </body>

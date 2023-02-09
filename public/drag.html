@@ -37,6 +37,7 @@
         background-color: red;
       }
       .box {
+        position: relative;
         width: 200px;
         height: 200px;
         background-color: bisque;
@@ -69,39 +70,46 @@
       <div id="scale">缩放倍数</div>
       <div id="translate">traslate</div>
     </div>
-    <div class="wrapper">
+    <div class="wrapper" draggable="false">
       <div class="lineVer"></div>
       <div class="lineHor"></div>
-      <div class="box">
+      <div class="box" draggable="true">
         <div class="boxVer"></div>
         <div class="boxHor"></div>
         <div class="boxDot"></div>
       </div>
       <div class="dot"></div>
     </div>
-    <!-- <script src="./index.iife.js"></script> -->
-    <script src="https://qiniu1.lxfriday.xyz/feoffer/1675846185676_3d4dd40b-2e62-47ce-8c1e-de3a0e8fd645.js"></script>
     <script>
-      const scaleEle = document.querySelector('#scale'),
-        translateEle = document.querySelector('#translate')
-      const boxScaler = new FixedPointScaling({
-        target: document.querySelector('.box'),
-        enableScale: true,
-        onTransformChange(scale, x, y) {
-          scaleEle.innerText = `缩放倍数 ${Math.floor(scale * 100)}`
-          translateEle.innerText = `缩放倍数 ${JSON.stringify({ x, y })}`
-        },
+      const wrapperEle = document.querySelector('.wrapper')
+      const boxEle = document.querySelector('.box')
+      boxEle.addEventListener('drag', (e) => {
+        console.log('boxEle [drag]', e)
       })
-      const wrapperScaler = new FixedPointScaling({
-        target: document.querySelector('.wrapper'),
-        defaultScale: 3,
-        enableScale: true,
-        bindWheelEventOnTarget: false,
-        onTransformChange(scale, x, y) {
-          scaleEle.innerText = `缩放倍数 ${Math.floor(scale * 100)}`
-          translateEle.innerText = `缩放倍数 ${JSON.stringify({ x, y })}`
-        },
+      boxEle.addEventListener('dragstart', (e) => {
+        // e.preventDefault()
+        console.log('boxEle [dragstart]', e)
       })
+      boxEle.addEventListener('dragover', (e) => {
+        e.preventDefault()
+        // console.log('boxEle [dragover]', e)
+      })
+      boxEle.addEventListener('dragend', (e) => {
+        console.log('boxEle [dragend]', e)
+      })
+      document.addEventListener('mouseleave', e => {
+        console.log('mouse leave', e)
+      })
+      // boxEle.addEventListener('drop', () => {
+      //   console.log('boxEle [drop]')
+      // })
+      // wrapperEle.addEventListener('dragover', (e) => {
+      //   e.preventDefault()
+      //   console.log('wrapperEle [dragover]', e)
+      // })
+      // wrapperEle.addEventListener('drop', (e) => {
+      //   console.log('wrapperEle [drop]', e)
+      // })
     </script>
   </body>
 </html>
