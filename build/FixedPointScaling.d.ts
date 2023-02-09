@@ -38,7 +38,7 @@ interface IOptions {
     /**
      * 是否打印transform的状态信息 dev 时使用，默认 `false`
      */
-    logTransformInfo?: boolean;
+    showLog?: boolean;
     /**
      * 是否使用允许键盘来缩放目标，默认 `false`
      */
@@ -69,11 +69,19 @@ interface IOptions {
      */
     isWrapper?: boolean;
     /**
-     * 当transform状态发生变化时的监听函数
+     * 拖拽结束的时候触发
      */
-    onTransformChange?(scale: number, translateX: number, translateY: number): void;
+    onTranslateChange?(translate: {
+        x: number;
+        y: number;
+    }): void;
+    /**
+     * 缩放的时候触发
+     */
+    onScaleChange?(scale: number): void;
 }
 export default class FixedPointScaling {
+    static wrapperScale: number;
     /**
      * 目标元素
      */
@@ -126,7 +134,7 @@ export default class FixedPointScaling {
     /**
      * 是否显示transform的状态信息 dev 时使用，默认为 `false`
      */
-    private logTransformInfo;
+    private showLog;
     /**
      * 是否使用允许键盘来缩放目标，默认为 `false`
      */
@@ -150,34 +158,6 @@ export default class FixedPointScaling {
      */
     private isWrapper;
     /**
-     * 当transform状态发生变化时的监听函数
-     */
-    private onTransformChange;
-    /**
-     * 鼠标在 target 内按下
-     */
-    private handleMouseDown?;
-    /**
-     * 滚轮滚动
-     */
-    private handleMouseMove?;
-    /**
-     * 鼠标按键松开
-     */
-    private handleWindowMouseUp?;
-    /**
-     * 滚轮在目标区域内滚动
-     */
-    private handleWheel?;
-    /**
-     * 在window窗口滚轮滚动
-     */
-    private handleWindowWheel?;
-    /**
-     * 键盘事件
-     */
-    private handleKeyDown?;
-    /**
      * 当前的 translate
      */
     translate: {
@@ -185,32 +165,18 @@ export default class FixedPointScaling {
         y: number;
     };
     /**
-     * 普通放大，使用键盘或者滚轮不在target区域内部
-     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
-     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
-     * - `nextScale` 接下来要放大的倍数
+     * 拖拽结束的时候触发
      */
-    handleScaleUp?: (base?: {
-        x: number;
-        y: number;
-    }) => void;
+    private onTranslateChange;
     /**
-     * 普通缩小，使用键盘或者滚轮不在target区域内部
-     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
-     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
-     * - `nextScale` 接下来要放大的倍数
+     * 缩放的时候触发
      */
-    handleScaleDown?: (base?: {
-        x: number;
-        y: number;
-    }) => void;
-    /**
-     * 移动target
-     * - `nextX` 接下来的 translateX
-     * - `nextY` 接下来的 translateY
-     */
-    handleTranslate?: (nextX: number, nextY: number) => void;
+    private onScaleChange;
     private mapBooleanOptions;
+    /**
+     * 打印
+     */
+    private log;
     constructor(options: IOptions);
     /**
      * 初始化一些信息
@@ -220,6 +186,59 @@ export default class FixedPointScaling {
      * 开始运行
      */
     private run;
+    /**
+     * 拖拽开始
+     */
+    private onDragStart;
+    /**
+     * 拖拽
+     */
+    private onDrag;
+    private onDragOver;
+    /**
+     * 拖拽结束
+     */
+    private onDragEnd;
+    /**
+     * mousemove事件
+     */
+    private onMouseMove;
+    /**
+     * 滚轮在目标区域内滚动
+     */
+    private onWheel;
+    /**
+     * 在window窗口滚轮滚动
+     */
+    private onWindowWheel;
+    /**
+     * 键盘事件
+     */
+    private onKeyDown;
+    /**
+     * 普通放大，使用键盘或者滚轮不在target区域内部
+     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
+     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
+     */
+    onScaleUp: (base?: {
+        x: number;
+        y: number;
+    }) => void;
+    /**
+     * 普通缩小，使用键盘或者滚轮不在target区域内部
+     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
+     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
+     */
+    onScaleDown: (base?: {
+        x: number;
+        y: number;
+    }) => void;
+    /**
+     * 移动target
+     * - `nextX` 接下来的 translateX
+     * - `nextY` 接下来的 translateY
+     */
+    onTranslate: (nextX: number, nextY: number) => void;
     private checkCursorInTarget;
     /**
      * 绑定监听器
@@ -234,7 +253,7 @@ export default class FixedPointScaling {
      */
     private applyTransform;
     /**
-     * 重置 transform transform-origin
+     * 重置 translate scale
      */
     resetTransform(): void;
 }
