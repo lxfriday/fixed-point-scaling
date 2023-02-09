@@ -1,8 +1,10 @@
 {
   "name": "fixed-point-scaling",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
-  "main": "index.js",
+  "types": "build/FixedPointScaling.d.ts",
+  "main": "build/index.js",
+  "module": "build/index.es.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/lxfriday/fixed-point-scaling.git"
@@ -11,7 +13,8 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development rollup -cw",
     "build": "cross-env NODE_ENV=production rollup -c",
-    "prepublish": "rm -rf build && tsc && npm run build"
+    "prepublish": "rm -rf build && tsc && npm run build",
+    "clean": "rm -rf build"
   },
   "keywords": [],
   "author": "",
