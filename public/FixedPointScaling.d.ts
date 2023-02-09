@@ -158,43 +158,6 @@ export default class FixedPointScaling {
      */
     private isWrapper;
     /**
-     * 拖拽结束的时候触发
-     */
-    private onTranslateChange;
-    /**
-     * 缩放的时候触发
-     */
-    private onScaleChange;
-    /**
-     * 拖拽开始
-     */
-    private onDragStart?;
-    /**
-     * 拖拽
-     */
-    private onDrag?;
-    private onDragOver?;
-    /**
-     * 拖拽结束
-     */
-    private onDragEnd?;
-    /**
-     * mousemove事件
-     */
-    private onMouseMove?;
-    /**
-     * 滚轮在目标区域内滚动
-     */
-    private onWheel?;
-    /**
-     * 在window窗口滚轮滚动
-     */
-    private onWindowWheel?;
-    /**
-     * 键盘事件
-     */
-    private onKeyDown?;
-    /**
      * 当前的 translate
      */
     translate: {
@@ -202,32 +165,17 @@ export default class FixedPointScaling {
         y: number;
     };
     /**
-     * 普通放大，使用键盘或者滚轮不在target区域内部
-     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
-     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
-     * - `nextScale` 接下来要放大的倍数
+     * 拖拽结束的时候触发
      */
-    onScaleUp?: (base?: {
-        x: number;
-        y: number;
-    }) => void;
+    private onTranslateChange;
     /**
-     * 普通缩小，使用键盘或者滚轮不在target区域内部
-     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
-     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
-     * - `nextScale` 接下来要放大的倍数
+     * 缩放的时候触发
      */
-    onScaleDown?: (base?: {
-        x: number;
-        y: number;
-    }) => void;
-    /**
-     * 移动target
-     * - `nextX` 接下来的 translateX
-     * - `nextY` 接下来的 translateY
-     */
-    onTranslate?: (nextX: number, nextY: number) => void;
+    private onScaleChange;
     private mapBooleanOptions;
+    /**
+     * 打印
+     */
     private log;
     constructor(options: IOptions);
     /**
@@ -238,6 +186,59 @@ export default class FixedPointScaling {
      * 开始运行
      */
     private run;
+    /**
+     * 拖拽开始
+     */
+    private onDragStart;
+    /**
+     * 拖拽
+     */
+    private onDrag;
+    private onDragOver;
+    /**
+     * 拖拽结束
+     */
+    private onDragEnd;
+    /**
+     * mousemove事件
+     */
+    private onMouseMove;
+    /**
+     * 滚轮在目标区域内滚动
+     */
+    private onWheel;
+    /**
+     * 在window窗口滚轮滚动
+     */
+    private onWindowWheel;
+    /**
+     * 键盘事件
+     */
+    private onKeyDown;
+    /**
+     * 普通放大，使用键盘或者滚轮不在target区域内部
+     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
+     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
+     */
+    onScaleUp: (base?: {
+        x: number;
+        y: number;
+    }) => void;
+    /**
+     * 普通缩小，使用键盘或者滚轮不在target区域内部
+     * - `base.x` 基点相对于浏览器窗口左侧的距离 left
+     * - `base.y` 基点相对于浏览器窗口顶部的距离 top
+     */
+    onScaleDown: (base?: {
+        x: number;
+        y: number;
+    }) => void;
+    /**
+     * 移动target
+     * - `nextX` 接下来的 translateX
+     * - `nextY` 接下来的 translateY
+     */
+    onTranslate: (nextX: number, nextY: number) => void;
     private checkCursorInTarget;
     /**
      * 绑定监听器
