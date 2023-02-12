@@ -54,6 +54,14 @@ interface IOptions {
      */
     draggingCursorType?: string;
     /**
+     * 拖拽时的 zIndex，默认 '5000'
+     */
+    draggingZIndex?: string | number;
+    /**
+     * 拖拽时的 border
+     */
+    draggingBorder?: string;
+    /**
      * 初始化时的 translate 值
      */
     defaultTranslate?: {
@@ -86,6 +94,10 @@ export default class FixedPointScaling {
      * 目标元素
      */
     private target;
+    /**
+     * 正在拖拽的目标
+     */
+    static draggingTarget: Node | null;
     /**
      * 是否把滚轮时间绑定在target上，`true` 绑定在target上，`false`绑定在window上，默认为 `true`
      * - `true` 需要鼠标移动到target区域内才会缩放
@@ -148,6 +160,22 @@ export default class FixedPointScaling {
      */
     private draggingCursorType;
     /**
+     * target 默认的ZIndex
+     */
+    private normalZIndex;
+    /**
+     * 拖拽时的 ZIndex
+     */
+    private draggingZIndex;
+    /**
+     * 默认的 border
+     */
+    private normalBorder;
+    /**
+     * 拖拽时的 border
+     */
+    private draggingBorder;
+    /**
      * 是否允许滑动滚轮时移动target，默认为 `false`
      * - 为 `true` 的时候，滚轮移动,target也会移动
      * - 为 `false` 的时候滚动不会移动 target
@@ -189,20 +217,15 @@ export default class FixedPointScaling {
     /**
      * 拖拽开始
      */
-    private onDragStart;
+    private onMouseDown;
     /**
      * 拖拽
      */
-    private onDrag;
-    private onDragOver;
+    private onMouseMove;
     /**
      * 拖拽结束
      */
-    private onDragEnd;
-    /**
-     * mousemove事件
-     */
-    private onMouseMove;
+    private onMouseUp;
     /**
      * 滚轮在目标区域内滚动
      */

@@ -55,6 +55,14 @@ interface IOptions {
    */
   draggingCursorType?: string
   /**
+   * 拖拽时的 zIndex，默认 '5000'
+   */
+  draggingZIndex?: string | number
+  /**
+   * 拖拽时的 border
+   */
+  draggingBorder?: string
+  /**
    * 初始化时的 translate 值
    */
   defaultTranslate?: { x: number; y: number }
@@ -163,6 +171,14 @@ export default class FixedPointScaling {
    */
   private draggingZIndex: string = '5000'
   /**
+   * 默认的 border
+   */
+  private normalBorder: string = ''
+  /**
+   * 拖拽时的 border
+   */
+  private draggingBorder: string = '1px solid #7176fb'
+  /**
    * 是否允许滑动滚轮时移动target，默认为 `false`
    * - 为 `true` 的时候，滚轮移动,target也会移动
    * - 为 `false` 的时候滚动不会移动 target
@@ -242,6 +258,9 @@ export default class FixedPointScaling {
 
     if (options.draggingCursorType)
       this.draggingCursorType = options.draggingCursorType
+    if (options.draggingZIndex)
+      this.draggingZIndex = String(options.draggingZIndex)
+    if (options.draggingBorder) this.draggingBorder = options.draggingBorder
     if (options.transition === false || options.transition === void 0)
       this.transition = 'none'
     else {
@@ -280,9 +299,12 @@ export default class FixedPointScaling {
     const bodyStyles = getComputedStyle(document.body)
     this.normalCursorType = bodyStyles.cursor
     this.normalZIndex = targetStyles.zIndex
+    this.normalBorder = targetStyles.border
+    this.log('normalBorder', this.normalBorder)
     // 删除拖拽时的虚框
     document.body.style.cursor = this.draggingCursorType
     this.target!.style.zIndex = this.draggingZIndex
+    this.target!.style.border = this.draggingBorder
     this.isDragging = true
     this.draggingSrcTranslate = { ...this.translate }
     this.cursorSrcPos = {
@@ -340,6 +362,7 @@ export default class FixedPointScaling {
       this.onTranslateChange && this.onTranslateChange(this.translate)
       document.body.style.cursor = this.normalCursorType
       this.target!.style.zIndex = this.normalZIndex
+      this.target!.style.border = this.normalBorder
       this.log('onMouseUp', e)
       FixedPointScaling.draggingTarget = null
     }

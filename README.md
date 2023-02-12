@@ -55,10 +55,6 @@ interface IOptions {
    */
   bindWheelEventOnTarget?: boolean
   /**
-   * 允许window缩放，默认 `false`
-   */
-  // enableWindowScale?: boolean
-  /**
    * 缩放step，默认 0.1
    */
   scaleStep?: number
@@ -100,9 +96,20 @@ interface IOptions {
    */
   draggingCursorType?: string
   /**
+   * 拖拽时的 zIndex，默认 '5000'
+   */
+  draggingZIndex?: string | number
+  /**
+   * 拖拽时的 border
+   */
+  draggingBorder?: string
+  /**
    * 初始化时的 translate 值
    */
-  defaultTranslate?: { x: number; y: number }
+  defaultTranslate?: {
+    x: number
+    y: number
+  }
   /**
    * 初始化时的 scale 值
    */
@@ -161,8 +168,6 @@ export default class FixedPointScaling {
 
 ## Demo
 
-- [1box](https://qiniu1.lxfriday.xyz/feoffer/1675935874654_7faf40f2-54ad-4dbe-bf6c-1eb0c2b115e7.html)
-- [2box](https://qiniu1.lxfriday.xyz/feoffer/1675935885408_038351ef-7c1a-420f-b83f-535f27e51485.html)
-- [100 个](https://qiniu1.lxfriday.xyz/feoffer/1675935895983_64ab16fc-da10-41b1-b4a3-8941f06afd6e.html)
-- [500 个 box](https://qiniu1.lxfriday.xyz/feoffer/1675935904790_53d4554a-3da6-4975-afd0-ca8a0f7d5c85.html)
-- [2000 个 box 卡顿](https://qiniu1.lxfriday.xyz/feoffer/1675935913810_2c9be723-9598-4768-997b-4b11de2cc048.html)
+- [100 个](https://qiniu1.lxfriday.xyz/feoffer/1676197198539_cc9d2fa0-03e3-4c99-9b43-36a5edf7b3a0.html)
+- [500 个 box](https://qiniu1.lxfriday.xyz/feoffer/1676197209991_1ace065d-79d1-427b-8207-fed66610cd8a.html)
+- [2000 个 box 卡顿](https://qiniu1.lxfriday.xyz/feoffer/1676197222281_ed307850-2778-4cc9-b000-bb37a4e953be.html)

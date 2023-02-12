@@ -54,6 +54,14 @@ interface IOptions {
      */
     draggingCursorType?: string;
     /**
+     * 拖拽时的 zIndex，默认 '5000'
+     */
+    draggingZIndex?: string | number;
+    /**
+     * 拖拽时的 border
+     */
+    draggingBorder?: string;
+    /**
      * 初始化时的 translate 值
      */
     defaultTranslate?: {
@@ -159,6 +167,14 @@ export default class FixedPointScaling {
      * 拖拽时的 ZIndex
      */
     private draggingZIndex;
+    /**
+     * 默认的 border
+     */
+    private normalBorder;
+    /**
+     * 拖拽时的 border
+     */
+    private draggingBorder;
     /**
      * 是否允许滑动滚轮时移动target，默认为 `false`
      * - 为 `true` 的时候，滚轮移动,target也会移动

@@ -109,6 +109,14 @@ var FixedPointScaling = (function () {
              */
             this.draggingZIndex = '5000';
             /**
+             * 默认的 border
+             */
+            this.normalBorder = '';
+            /**
+             * 拖拽时的 border
+             */
+            this.draggingBorder = '1px solid #7176fb';
+            /**
              * 是否允许滑动滚轮时移动target，默认为 `false`
              * - 为 `true` 的时候，滚轮移动,target也会移动
              * - 为 `false` 的时候滚动不会移动 target
@@ -149,9 +157,12 @@ var FixedPointScaling = (function () {
                 var bodyStyles = getComputedStyle(document.body);
                 _this.normalCursorType = bodyStyles.cursor;
                 _this.normalZIndex = targetStyles.zIndex;
+                _this.normalBorder = targetStyles.border;
+                _this.log('normalBorder', _this.normalBorder);
                 // 删除拖拽时的虚框
                 document.body.style.cursor = _this.draggingCursorType;
                 _this.target.style.zIndex = _this.draggingZIndex;
+                _this.target.style.border = _this.draggingBorder;
                 _this.isDragging = true;
                 _this.draggingSrcTranslate = __assign({}, _this.translate);
                 _this.cursorSrcPos = {
@@ -205,6 +216,7 @@ var FixedPointScaling = (function () {
                     _this.onTranslateChange && _this.onTranslateChange(_this.translate);
                     document.body.style.cursor = _this.normalCursorType;
                     _this.target.style.zIndex = _this.normalZIndex;
+                    _this.target.style.border = _this.normalBorder;
                     _this.log('onMouseUp', e);
                     FixedPointScaling.draggingTarget = null;
                 }
@@ -443,6 +455,10 @@ var FixedPointScaling = (function () {
                     : { x: 0, y: 0 };
             if (options.draggingCursorType)
                 this.draggingCursorType = options.draggingCursorType;
+            if (options.draggingZIndex)
+                this.draggingZIndex = String(options.draggingZIndex);
+            if (options.draggingBorder)
+                this.draggingBorder = options.draggingBorder;
             if (options.transition === false || options.transition === void 0)
                 this.transition = 'none';
             else {

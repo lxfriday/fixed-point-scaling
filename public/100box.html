@@ -41,6 +41,7 @@
         position: absolute;
         left: 0;
         top: 0;
+        box-sizing: border-box;
         width: 200px;
         height: 200px;
         background-color: bisque;
@@ -87,8 +88,8 @@
       </div>
       <div class="dot"></div>
     </div>
-    <script src="./index.iife.js"></script>
-    <!-- <script src="https://qiniu1.lxfriday.xyz/feoffer/1675935777553_61faf593-c47b-4ff3-9387-527eb0c4cdec.js"></script> -->
+    <!-- <script src="./index.iife.js"></script> -->
+    <script src="https://qiniu1.lxfriday.xyz/feoffer/1676197093104_4a2d0093-186c-45a9-bc23-ee72639a1cbd.js"></script>
     <script>
       const scaleEle = document.querySelector('#scale'),
         translateEle = document.querySelector('#translate')
@@ -102,6 +103,7 @@
           enableScale: true,
           defaultTranslate: { x: i * 20, y: i * 10 },
           showLog: true,
+          
         })
         fragment.append(box)
       })
@@ -127,6 +129,7 @@
         isWrapper: true,
         enableKeyboardScale: true,
         showLog: true,
+        draggingBorder: '0',
         onTranslateChange({ x, y }) {
           translateEle.innerText = `translate ${JSON.stringify({ x, y })}`
         },
