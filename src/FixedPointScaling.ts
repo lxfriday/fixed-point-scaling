@@ -88,6 +88,10 @@ export default class FixedPointScaling {
    */
   private target: HTMLElement | null = null
   /**
+   * 正在拖拽的目标
+   */
+  static draggingTarget: Node | null = null
+  /**
    * 是否把滚轮时间绑定在target上，`true` 绑定在target上，`false`绑定在window上，默认为 `true`
    * - `true` 需要鼠标移动到target区域内才会缩放
    * - `false` 只要移动滚轮就会缩放
@@ -149,7 +153,15 @@ export default class FixedPointScaling {
   /**
    * 拖拽时的鼠标样式，默认为为 `grab`
    */
-  private draggingCursorType: string = 'grab'
+  private draggingCursorType: string = 'grabbing'
+  /**
+   * target 默认的ZIndex
+   */
+  private normalZIndex: string = ''
+  /**
+   * 拖拽时的 ZIndex
+   */
+  private draggingZIndex: string = '5000'
   /**
    * 是否允许滑动滚轮时移动target，默认为 `false`
    * - 为 `true` 的时候，滚轮移动,target也会移动
@@ -241,7 +253,7 @@ export default class FixedPointScaling {
     }
     this.target.style.transformOrigin = '0 0' // origin 设置为左上角
     this.target.style.transition = this.transition as string
-    this.target.draggable = true
+    this.target.draggable = false
     this.applyTransform()
   }
   /**
@@ -253,14 +265,24 @@ export default class FixedPointScaling {
   /**
    * 拖拽开始
    */
-  private onDragStart = (e: DragEvent) => {
+  private onMouseDown = (e: MouseEvent) => {
+    this.log('onMouseDown', e)
+    // 找到最近的父目标元素
+    let draggingTarget: Node | null = e.target as Node
+    while (draggingTarget && draggingTarget !== this.target) {
+      draggingTarget = draggingTarget.parentNode
+    }
+    if (!draggingTarget) return
+    FixedPointScaling.draggingTarget = draggingTarget
     e.stopPropagation()
-    this.log('dragstart', e)
-    const target = this.target
-    this.normalCursorType = target!.style.cursor
+    this.log('onMouseDown target', draggingTarget)
+    const targetStyles = getComputedStyle(this.target!)
+    const bodyStyles = getComputedStyle(document.body)
+    this.normalCursorType = bodyStyles.cursor
+    this.normalZIndex = targetStyles.zIndex
     // 删除拖拽时的虚框
-    e.dataTransfer!.setDragImage(draggingImage, 0, 0)
-    e.dataTransfer!.effectAllowed = 'move'
+    document.body.style.cursor = this.draggingCursorType
+    this.target!.style.zIndex = this.draggingZIndex
     this.isDragging = true
     this.draggingSrcTranslate = { ...this.translate }
     this.cursorSrcPos = {
@@ -271,11 +293,11 @@ export default class FixedPointScaling {
   /**
    * 拖拽
    */
-  private onDrag = (e: DragEvent) => {
-    e.stopPropagation()
-    e.preventDefault()
-    this.log('drag', e)
-    if (this.isDragging) {
+  private onMouseMove = (e: MouseEvent) => {
+    if (this.isDragging && this.target === FixedPointScaling.draggingTarget) {
+      this.log('onMouseMove', e)
+      e.stopPropagation()
+      e.preventDefault()
       const cursorCurrentPos = {
         x: e.clientX,
         y: e.clientY,
@@ -308,24 +330,20 @@ export default class FixedPointScaling {
       this.applyTransform()
     }
   }
-  private onDragOver = (e: DragEvent) => {
-    // 防止 drag 事件的最后一次触发鼠标位置是 0
-    e.preventDefault()
-    e.stopPropagation()
-  }
   /**
    * 拖拽结束
    */
-  private onDragEnd = (e: DragEvent) => {
-    e.stopPropagation()
-    this.isDragging = false
-    this.onTranslateChange && this.onTranslateChange(this.translate)
-    this.log('dragend', e)
+  private onMouseUp = (e: MouseEvent) => {
+    if (this.isDragging && this.target === FixedPointScaling.draggingTarget) {
+      e.stopPropagation()
+      this.isDragging = false
+      this.onTranslateChange && this.onTranslateChange(this.translate)
+      document.body.style.cursor = this.normalCursorType
+      this.target!.style.zIndex = this.normalZIndex
+      this.log('onMouseUp', e)
+      FixedPointScaling.draggingTarget = null
+    }
   }
-  /**
-   * mousemove事件
-   */
-  private onMouseMove = (e: MouseEvent) => {}
   /**
    * 滚轮在目标区域内滚动
    */
@@ -529,11 +547,9 @@ export default class FixedPointScaling {
    */
   private applyListeners() {
     const target = this.target
-    target!.addEventListener('dragstart', this.onDragStart)
-    target!.addEventListener('drag', this.onDrag)
-    target!.addEventListener('dragover', this.onDragOver)
-    target!.addEventListener('dragend', this.onDragEnd)
-    target!.addEventListener('mousemove', this.onMouseMove)
+    target!.addEventListener('mousedown', this.onMouseDown)
+    window.addEventListener('mousemove', this.onMouseMove)
+    window.addEventListener('mouseup', this.onMouseUp)
     if (this.enableKeyboardScale) {
       window.addEventListener('keydown', this.onKeyDown)
     }
@@ -560,11 +576,9 @@ export default class FixedPointScaling {
    */
   public removeListeners() {
     const target = this.target
-    target!.removeEventListener('dragstart', this.onDragStart!)
-    target!.removeEventListener('drag', this.onDrag!)
-    target!.removeEventListener('dragover', this.onDragOver!)
-    target!.removeEventListener('dragend', this.onDragEnd!)
-    target!.removeEventListener('mousemove', this.onMouseMove!)
+    target!.removeEventListener('mousedown', this.onMouseDown)
+    window.removeEventListener('mousemove', this.onMouseMove)
+    window.removeEventListener('mouseup', this.onMouseUp)
     if (this.enableWheelSlide) {
       window.removeEventListener('wheel', this.onWindowWheel!)
     }
@@ -605,3 +619,4 @@ export default class FixedPointScaling {
 
 // 修改拖拽时的鼠标样式
 // 考虑用户自定义样式
+// 拖拽过快导致元素飘动到左上角，鼠标点失真

@@ -99,7 +99,15 @@ var FixedPointScaling = (function () {
             /**
              * 拖拽时的鼠标样式，默认为为 `grab`
              */
-            this.draggingCursorType = 'grab';
+            this.draggingCursorType = 'grabbing';
+            /**
+             * target 默认的ZIndex
+             */
+            this.normalZIndex = '';
+            /**
+             * 拖拽时的 ZIndex
+             */
+            this.draggingZIndex = '5000';
             /**
              * 是否允许滑动滚轮时移动target，默认为 `false`
              * - 为 `true` 的时候，滚轮移动,target也会移动
@@ -125,14 +133,25 @@ var FixedPointScaling = (function () {
             /**
              * 拖拽开始
              */
-            this.onDragStart = function (e) {
+            this.onMouseDown = function (e) {
+                _this.log('onMouseDown', e);
+                // 找到最近的父目标元素
+                var draggingTarget = e.target;
+                while (draggingTarget && draggingTarget !== _this.target) {
+                    draggingTarget = draggingTarget.parentNode;
+                }
+                if (!draggingTarget)
+                    return;
+                FixedPointScaling.draggingTarget = draggingTarget;
                 e.stopPropagation();
-                _this.log('dragstart', e);
-                var target = _this.target;
-                _this.normalCursorType = target.style.cursor;
+                _this.log('onMouseDown target', draggingTarget);
+                var targetStyles = getComputedStyle(_this.target);
+                var bodyStyles = getComputedStyle(document.body);
+                _this.normalCursorType = bodyStyles.cursor;
+                _this.normalZIndex = targetStyles.zIndex;
                 // 删除拖拽时的虚框
-                e.dataTransfer.setDragImage(draggingImage, 0, 0);
-                e.dataTransfer.effectAllowed = 'move';
+                document.body.style.cursor = _this.draggingCursorType;
+                _this.target.style.zIndex = _this.draggingZIndex;
                 _this.isDragging = true;
                 _this.draggingSrcTranslate = __assign({}, _this.translate);
                 _this.cursorSrcPos = {
@@ -143,11 +162,11 @@ var FixedPointScaling = (function () {
             /**
              * 拖拽
              */
-            this.onDrag = function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                _this.log('drag', e);
-                if (_this.isDragging) {
+            this.onMouseMove = function (e) {
+                if (_this.isDragging && _this.target === FixedPointScaling.draggingTarget) {
+                    _this.log('onMouseMove', e);
+                    e.stopPropagation();
+                    e.preventDefault();
                     var cursorCurrentPos = {
                         x: e.clientX,
                         y: e.clientY,
@@ -176,24 +195,20 @@ var FixedPointScaling = (function () {
                     _this.applyTransform();
                 }
             };
-            this.onDragOver = function (e) {
-                // 防止 drag 事件的最后一次触发鼠标位置是 0
-                e.preventDefault();
-                e.stopPropagation();
-            };
             /**
              * 拖拽结束
              */
-            this.onDragEnd = function (e) {
-                e.stopPropagation();
-                _this.isDragging = false;
-                _this.onTranslateChange && _this.onTranslateChange(_this.translate);
-                _this.log('dragend', e);
+            this.onMouseUp = function (e) {
+                if (_this.isDragging && _this.target === FixedPointScaling.draggingTarget) {
+                    e.stopPropagation();
+                    _this.isDragging = false;
+                    _this.onTranslateChange && _this.onTranslateChange(_this.translate);
+                    document.body.style.cursor = _this.normalCursorType;
+                    _this.target.style.zIndex = _this.normalZIndex;
+                    _this.log('onMouseUp', e);
+                    FixedPointScaling.draggingTarget = null;
+                }
             };
-            /**
-             * mousemove事件
-             */
-            this.onMouseMove = function (e) { };
             /**
              * 滚轮在目标区域内滚动
              */
@@ -440,7 +455,7 @@ var FixedPointScaling = (function () {
             }
             this.target.style.transformOrigin = '0 0'; // origin 设置为左上角
             this.target.style.transition = this.transition;
-            this.target.draggable = true;
+            this.target.draggable = false;
             this.applyTransform();
         };
         /**
@@ -467,11 +482,9 @@ var FixedPointScaling = (function () {
          */
         FixedPointScaling.prototype.applyListeners = function () {
             var target = this.target;
-            target.addEventListener('dragstart', this.onDragStart);
-            target.addEventListener('drag', this.onDrag);
-            target.addEventListener('dragover', this.onDragOver);
-            target.addEventListener('dragend', this.onDragEnd);
-            target.addEventListener('mousemove', this.onMouseMove);
+            target.addEventListener('mousedown', this.onMouseDown);
+            window.addEventListener('mousemove', this.onMouseMove);
+            window.addEventListener('mouseup', this.onMouseUp);
             if (this.enableKeyboardScale) {
                 window.addEventListener('keydown', this.onKeyDown);
             }
@@ -499,11 +512,9 @@ var FixedPointScaling = (function () {
          */
         FixedPointScaling.prototype.removeListeners = function () {
             var target = this.target;
-            target.removeEventListener('dragstart', this.onDragStart);
-            target.removeEventListener('drag', this.onDrag);
-            target.removeEventListener('dragover', this.onDragOver);
-            target.removeEventListener('dragend', this.onDragEnd);
-            target.removeEventListener('mousemove', this.onMouseMove);
+            target.removeEventListener('mousedown', this.onMouseDown);
+            window.removeEventListener('mousemove', this.onMouseMove);
+            window.removeEventListener('mouseup', this.onMouseUp);
             if (this.enableWheelSlide) {
                 window.removeEventListener('wheel', this.onWindowWheel);
             }
@@ -541,10 +552,15 @@ var FixedPointScaling = (function () {
             this.log("translateX: ".concat(this.translate.x, ", translateY: ").concat(this.translate.y, ", scale: ").concat(this.scale));
         };
         FixedPointScaling.wrapperScale = 1;
+        /**
+         * 正在拖拽的目标
+         */
+        FixedPointScaling.draggingTarget = null;
         return FixedPointScaling;
     }());
     // 修改拖拽时的鼠标样式
     // 考虑用户自定义样式
+    // 拖拽过快导致元素飘动到左上角，鼠标点失真
 
     return FixedPointScaling;
 
